@@ -87,6 +87,7 @@ private:
 
 	RAS_DisplayArrayDownwardNode m_instancingNode;
 	RAS_DisplayArrayDownwardNode m_batchingNode;
+	RAS_DisplayArrayDownwardNode m_shadowNode;
 
 	void BindPrimitives(RAS_Rasterizer *rasty);
 	void UnbindPrimitives(RAS_Rasterizer *rasty);
@@ -136,6 +137,7 @@ public:
 	void BindUpwardNode(const RAS_DisplayArrayNodeTuple& tuple);
 	void UnbindUpwardNode(const RAS_DisplayArrayNodeTuple& tuple);
 	void RunDownwardNode(const RAS_DisplayArrayNodeTuple& tuple);
+	void RunDownwardNodeShadow(const RAS_DisplayArrayNodeTuple& tuple);
 	void RunDownwardNodeNoArray(const RAS_DisplayArrayNodeTuple& tuple);
 	void RunInstancingNode(const RAS_DisplayArrayNodeTuple& tuple);
 	void RunBatchingNode(const RAS_DisplayArrayNodeTuple& tuple);

@@ -32,6 +32,10 @@
 #ifndef __RAS_LIGHTOBJECT_H__
 #define __RAS_LIGHTOBJECT_H__
 
+extern "C" {
+#include "eevee_private.h"
+}
+
 class RAS_ICanvas;
 
 class KX_Camera;
@@ -41,14 +45,6 @@ class MT_Transform;
 class MT_Matrix4x4;
 
 struct Image;
-
-typedef struct EEVEE_ShadowRender {
-	float shadowmat[6][4][4]; /* World->Lamp->NDC : used to render the shadow map. 6 frustrum for cubemap shadow */
-	float position[3];
-	float pad;
-	int layer;
-	float exponent;
-} EEVEE_ShadowRender;
 
 class RAS_ILightObject
 {

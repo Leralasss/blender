@@ -94,6 +94,11 @@ void EEVEE_lights_init(EEVEE_SceneLayerData *sldata)
 	}
 }
 
+struct GPUShader *EEVEE_get_shadow_shader()
+{
+	return e_data.shadow_sh;
+}
+
 void EEVEE_lights_cache_init(EEVEE_SceneLayerData *sldata, EEVEE_PassList *psl)
 {
 	EEVEE_LampsInfo *linfo = sldata->lamps;

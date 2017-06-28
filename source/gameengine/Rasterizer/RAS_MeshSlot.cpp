@@ -335,3 +335,118 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 	}
 	rasty->PopMatrix();
 }
+
+void RAS_MeshSlot::RunNodeShadow(const RAS_MeshSlotNodeTuple& tuple)
+{
+	RAS_ManagerNodeData *managerData = tuple.m_managerData;
+	RAS_MaterialNodeData *materialData = tuple.m_materialData;
+	RAS_DisplayArrayNodeData *displayArrayData = tuple.m_displayArrayData;
+	RAS_Rasterizer *rasty = managerData->m_rasty;
+	rasty->SetClientObject(m_meshUser->GetClientObject());
+	rasty->SetFrontFace(m_meshUser->GetFrontFace());
+
+
+	if (!managerData->m_shaderOverride) {
+		materialData->m_material->ActivateMeshSlot(this, rasty);
+	}
+
+	rasty->PushMatrix();
+
+	const bool istext = materialData->m_text;
+	if ((!m_pDeformer || !m_pDeformer->SkipVertexTransform()) && !istext) {
+		float mat[16];
+		rasty->GetTransform(m_meshUser->GetMatrix(), materialData->m_drawingMode, mat);
+		rasty->MultMatrix(mat);
+	}
+
+	if (istext) {
+		rasty->IndexPrimitivesText(this);
+	}
+	else if (m_pDerivedMesh) {
+		rasty->IndexPrimitivesDerivedMesh(this);
+	}
+	else {
+		/* For blender shaders (not custom), we need
+		* to bind shader to update uniforms.
+		* In shadow pass for now, we don't update
+		* the ShaderInterface uniforms because
+		* GPUMaterial is not accessible (RenderShadowBuffer
+		* is called before main rendering and the GPUMaterial
+		* is bound only when we do the main rendering).
+		* Refs: - For drawing mode, rasterizer drawing mode is
+		* set to RAS_SHADOWS in KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
+		* - To see the order of rendering operations, this is in
+		* KX_KetsjiEngine::Render() (RenderShadowBuffers is called
+		* at the begining of Render()
+		* (m_drawingmode != 0) is used to avoid crash when we press
+		* P while we are in wireframe viewport shading mode.
+		*/
+		KX_KetsjiEngine *engine = KX_GetActiveEngine();
+		GPUMaterial *gpumat = GetGpuMat();
+		if (gpumat && ((rasty->GetDrawingMode() != RAS_Rasterizer::RAS_SHADOW) && (rasty->GetDrawingMode() != RAS_Rasterizer::RAS_WIREFRAME))) {
+			GPUPass *pass = GPU_material_get_pass(gpumat);
+			GPUShader *shader = GPU_pass_shader(pass);
+			GPU_shader_bind(shader);
+
+			KX_Scene *scene = KX_GetActiveScene();
+			KX_Camera *cam = scene->GetActiveCamera();
+
+			// lit surface frag uniforms
+			int projloc = GPU_shader_get_uniform(shader, "ProjectionMatrix");
+			int viewinvloc = GPU_shader_get_uniform(shader, "ViewMatrixInverse");
+			int viewloc = GPU_shader_get_uniform(shader, "ViewMatrix");
+			// lit surface vert uniforms
+			int modelviewprojloc = GPU_shader_get_uniform(shader, "ModelViewProjectionMatrix");
+			int modelloc = GPU_shader_get_uniform(shader, "ModelMatrix");
+			int modelviewloc = GPU_shader_get_uniform(shader, "ModelViewMatrix");
+			int worldnormloc = GPU_shader_get_uniform(shader, "WorldNormalMatrix");
+			int normloc = GPU_shader_get_uniform(shader, "NormalMatrix");
+
+			MT_Matrix4x4 proj(cam->GetProjectionMatrix());
+			MT_Matrix4x4 view(rasty->GetViewMatrix());
+			MT_Matrix4x4 viewinv(rasty->GetViewInvMatrix());
+			MT_Matrix4x4 model(m_meshUser->GetMatrix());
+			MT_Matrix4x4 modelview(rasty->GetViewMatrix() * model);
+			MT_Matrix4x4 modelviewproj(proj * modelview);
+			MT_Matrix4x4 worldnorm(model.inverse());
+			MT_Matrix4x4 norm(viewinv * worldnorm);
+
+			float projf[16];
+			float viewf[16];
+			float viewinvf[16];
+			float modelviewprojf[16];
+			float modelf[16];
+			float modelviewf[16];
+			float worldnormf[9];
+			float normf[9];
+
+			proj.getValue(projf);
+			view.getValue(viewf);
+			viewinv.getValue(viewinvf);
+			modelviewproj.getValue(modelviewprojf);
+			model.getValue(modelf);
+			modelview.getValue(modelviewf);
+
+			int k = 0;
+			for (int i = 0; i < 3; i++) {
+				for (int j = 0; j < 3; j++) {
+					worldnormf[k] = worldnorm[i][j];
+					normf[k] = norm[i][j];
+					k++;
+				}
+			}
+
+			// MATRICES
+			GPU_shader_uniform_vector(shader, projloc, 16, 1, (float *)projf);
+			GPU_shader_uniform_vector(shader, viewloc, 16, 1, (float *)viewf);
+			GPU_shader_uniform_vector(shader, viewinvloc, 16, 1, (float *)viewinvf);
+			GPU_shader_uniform_vector(shader, modelviewprojloc, 16, 1, (float *)modelviewprojf);
+			GPU_shader_uniform_vector(shader, modelloc, 16, 1, (float *)modelf);
+			GPU_shader_uniform_vector(shader, modelviewloc, 16, 1, (float *)modelviewf);
+			GPU_shader_uniform_vector(shader, worldnormloc, 9, 1, (float *)worldnormf);
+			GPU_shader_uniform_vector(shader, normloc, 16, 9, (float *)normf);
+		}
+		rasty->IndexPrimitivesInstancing(displayArrayData->m_storageInfo, 6 /*TODO dynamic face number*/);
+	}
+	rasty->PopMatrix();
+}

@@ -83,6 +83,7 @@ public:
 
 	void GenerateTree(RAS_DisplayArrayUpwardNode& root, RAS_UpwardTreeLeafs& leafs);
 	void RunNode(const RAS_MeshSlotNodeTuple& tuple);
+	void RunNodeShadow(const RAS_MeshSlotNodeTuple& tuple);
 
 	void SetGpuMat(GPUMaterial *mat);
 	GPUMaterial *GetGpuMat();

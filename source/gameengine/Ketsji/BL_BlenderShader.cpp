@@ -131,7 +131,7 @@ void BL_BlenderShader::ReloadMaterial()
 		DRW_shgroup_free(m_shGroup);
 	}
 	m_shGroup = DRW_shgroup_material_create(m_gpuMat, nullptr);
-	EEVEE_shgroup_add_standard_uniforms(m_shGroup, EEVEE_scene_layer_data_get(), (EEVEE_Data *)DRW_viewport_engine_data_get(&DRW_engine_viewport_eevee_type));
+	//EEVEE_shgroup_add_standard_uniforms(m_shGroup, EEVEE_scene_layer_data_get(), (EEVEE_Data *)DRW_viewport_engine_data_get(&DRW_engine_viewport_eevee_type));
 
 	ParseAttribs();
 }
@@ -212,7 +212,7 @@ void BL_BlenderShader::Update(RAS_MeshSlot *ms, RAS_Rasterizer *rasty)
 
 	ms->SetGpuMat(m_gpuMat);
 
-	float viewmat[4][4];
+	//float viewmat[4][4];
 	float *obcol = (float *)ms->m_meshUser->GetColor().getValue();
 
 // 	rasty->GetViewMatrix().getValue((float *)viewmat);

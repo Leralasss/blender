@@ -74,6 +74,8 @@ RAS_DisplayArrayBucket::RAS_DisplayArrayBucket(RAS_MaterialBucket *bucket, RAS_I
 		m_downwardNode = RAS_DisplayArrayDownwardNode(this, &m_nodeData, std::mem_fn(&RAS_DisplayArrayBucket::RunDownwardNodeNoArray), nullptr);
 		m_upwardNode = RAS_DisplayArrayUpwardNode(this, &m_nodeData, nullptr, nullptr);
 	}
+	// 9a va être vraiment sale....
+	m_shadowNode = RAS_DisplayArrayDownwardNode(this, &m_nodeData, std::mem_fn(&RAS_DisplayArrayBucket::RunDownwardNodeShadow), nullptr);// 2secok
 }
 
 RAS_DisplayArrayBucket::~RAS_DisplayArrayBucket()
@@ -246,7 +248,10 @@ void RAS_DisplayArrayBucket::GenerateTree(RAS_MaterialDownwardNode& downwardRoot
 	// Update deformer and render settings.
 	UpdateActiveMeshSlots(rasty);
 
-	if (instancing) {
+	if (rasty->GetDrawingMode() == RAS_Rasterizer::RAS_SHADOW) {
+		downwardRoot.AddChild(&m_shadowNode);
+	}
+	else if (instancing) {
 		downwardRoot.AddChild(&m_instancingNode);
 	}
 	else if (UseBatching()) {
@@ -284,6 +289,21 @@ void RAS_DisplayArrayBucket::RunDownwardNode(const RAS_DisplayArrayNodeTuple& tu
 	for (RAS_MeshSlot *ms : m_activeMeshSlots) {
 		// Reuse the node function without spend time storing RAS_MeshSlot under nodes.
 		ms->RunNode(msTuple);
+	}
+
+	UnbindPrimitives(rasty);
+}
+
+void RAS_DisplayArrayBucket::RunDownwardNodeShadow(const RAS_DisplayArrayNodeTuple& tuple)
+{
+	RAS_Rasterizer *rasty = tuple.m_managerData->m_rasty;
+
+	BindPrimitives(rasty);
+
+	const RAS_MeshSlotNodeTuple msTuple(tuple, &m_nodeData);
+	for (RAS_MeshSlot *ms : m_activeMeshSlots) {
+		// Reuse the node function without spend time storing RAS_MeshSlot under nodes.
+		ms->RunNodeShadow(msTuple);
 	}
 
 	UnbindPrimitives(rasty);

@@ -58,6 +58,7 @@
 extern "C" {
 #  include "BLF_api.h"
 #  include "GPU_uniformbuffer.h"
+#  include "eevee_private.h"
 }
 
 #include "MEM_guardedalloc.h"
@@ -1150,6 +1151,7 @@ GPUShader *RAS_Rasterizer::GetOverrideGPUShader(OverrideShaderType type)
 	switch (type) {
 		case RAS_OVERRIDE_SHADER_NONE:
 		{
+			shader = EEVEE_get_shadow_shader();
 			break;
 		}
 		case RAS_OVERRIDE_SHADER_BLACK:

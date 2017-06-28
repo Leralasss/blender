@@ -425,6 +425,7 @@ void EEVEE_draw_default_passes(EEVEE_PassList *psl);
 
 /* eevee_lights.c */
 void EEVEE_lights_init(EEVEE_SceneLayerData *sldata);
+struct GPUShader *EEVEE_get_shadow_shader();
 void EEVEE_lights_cache_init(EEVEE_SceneLayerData *sldata, EEVEE_PassList *psl);
 void EEVEE_lights_cache_add(EEVEE_SceneLayerData *sldata, struct Object *ob);
 void EEVEE_lights_cache_shcaster_add(EEVEE_SceneLayerData *sldata, EEVEE_PassList *psl, struct Gwn_Batch *geom, float (*obmat)[4]);

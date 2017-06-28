@@ -873,12 +873,11 @@ void KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
 		/* render */
 		m_rasterizer->Clear(RAS_Rasterizer::RAS_DEPTH_BUFFER_BIT | RAS_Rasterizer::RAS_COLOR_BUFFER_BIT);
 		
-
 		// Send a nullptr off screen because the viewport is binding it's using its own private one.
 		scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
 
 		/* unbind framebuffer object, restore drawmode, free camera */
-		GPU_framebuffer_restore();
+		//GPU_framebuffer_restore();
 
 		m_rasterizer->SetDrawingMode(drawmode);
 		cam->Release();
