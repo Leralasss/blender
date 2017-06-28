@@ -230,6 +230,13 @@ void EEVEE_shgroup_add_standard_uniforms(DRWShadingGroup *shgrp, EEVEE_SceneLaye
 	scene->eevee_probe_count = sldata->probes->num_render_cube;
 	scene->eevee_probe_tex = sldata->probe_pool;
 	scene->eevee_lod_max = sldata->probes->lodmax;
+	scene->eevee_shadow_tex = sldata->shadow_depth_cube_pool;
+	scene->eevee_shadow_ubo = sldata->shadow_ubo;
+	scene->eevee_shadow_render_ubo = sldata->shadow_render_ubo;
+	scene->eevee_shadow_cube_fbo = sldata->shadow_cube_fb;
+	scene->eevee_shadow_cube_target_fbo = sldata->shadow_cube_target_fb;
+	scene->eevee_shadow_cube_color_target = sldata->shadow_depth_cube_target;
+	scene->eevee_shadow_cube_depth_target = sldata->shadow_color_cube_target;
 }
 
 static void create_default_shader(int options)

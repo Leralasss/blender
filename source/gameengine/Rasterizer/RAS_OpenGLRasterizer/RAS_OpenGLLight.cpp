@@ -51,6 +51,40 @@
 #include "KX_Globals.h"
 #include "KX_Scene.h"
 
+/* Cubemap Matrices */
+static const float cubefacemat[6][4][4] = {
+	/* Pos X */
+	{ { 0.0, 0.0, -1.0, 0.0 },
+	{ 0.0, -1.0, 0.0, 0.0 },
+	{ -1.0, 0.0, 0.0, 0.0 },
+	{ 0.0, 0.0, 0.0, 1.0 } },
+	/* Neg X */
+	{ { 0.0, 0.0, 1.0, 0.0 },
+	{ 0.0, -1.0, 0.0, 0.0 },
+	{ 1.0, 0.0, 0.0, 0.0 },
+	{ 0.0, 0.0, 0.0, 1.0 } },
+	/* Pos Y */
+	{ { 1.0, 0.0, 0.0, 0.0 },
+	{ 0.0, 0.0, -1.0, 0.0 },
+	{ 0.0, 1.0, 0.0, 0.0 },
+	{ 0.0, 0.0, 0.0, 1.0 } },
+	/* Neg Y */
+	{ { 1.0, 0.0, 0.0, 0.0 },
+	{ 0.0, 0.0, 1.0, 0.0 },
+	{ 0.0, -1.0, 0.0, 0.0 },
+	{ 0.0, 0.0, 0.0, 1.0 } },
+	/* Pos Z */
+	{ { 1.0, 0.0, 0.0, 0.0 },
+	{ 0.0, -1.0, 0.0, 0.0 },
+	{ 0.0, 0.0, -1.0, 0.0 },
+	{ 0.0, 0.0, 0.0, 1.0 } },
+	/* Neg Z */
+	{ { -1.0, 0.0, 0.0, 0.0 },
+	{ 0.0, -1.0, 0.0, 0.0 },
+	{ 0.0, 0.0, 1.0, 0.0 },
+	{ 0.0, 0.0, 0.0, 1.0 } },
+};
+
 RAS_OpenGLLight::RAS_OpenGLLight(RAS_Rasterizer *ras)
 	:m_rasterizer(ras)
 {
@@ -239,8 +273,40 @@ bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer,
 	/* Lamp Type */
 	lightsData[slot].lamptype = (float)la->type;
 
-	/* No shadow by default */
-	lightsData[slot].shadowid = -1.0f;
+
+	if ((la->type == LA_AREA || la->type == LA_LOCAL || la->type == LA_SPOT) && NeedShadowUpdate()) {
+		lightsData[slot].shadowid = (float)slot;
+
+		// Update this light shadow data to render in next frame
+		EEVEE_ShadowCube *shadowCubeData = kxscene->GetShadowCubeData();
+		shadowCubeData[slot].bias = la->bias;
+		shadowCubeData[slot].exp = la->bleedexp;
+		shadowCubeData[slot].farf = la->clipend;
+		shadowCubeData[slot].nearf = la->clipsta;
+
+		m_shadowRenderData.exponent = la->bleedexp;
+		m_shadowRenderData.layer = slot;
+		m_shadowRenderData.pad = 0.0f;
+		copy_v3_v3(m_shadowRenderData.position, obmat[3]);
+
+		float projmat[4][4];
+
+		perspective_m4(projmat, -la->clipsta, la->clipsta, -la->clipsta, la->clipsta, la->clipsta, la->clipend);
+
+		for (int i = 0; i < 6; ++i) {
+			float tmp[4][4];
+			unit_m4(tmp);
+			negate_v3_v3(tmp[3], obmat[3]);
+			mul_m4_m4m4(tmp, cubefacemat[i], tmp);
+			mul_m4_m4m4(m_shadowRenderData.shadowmat[i], projmat, tmp);
+		}
+	}
+	else if ((la->type == LA_HEMI || la->type == LA_SUN) && NeedShadowUpdate()) {
+		lightsData[slot].shadowid = (float)slot + 42.0f;
+	}
+	else {
+		lightsData[slot].shadowid = -1.0f;
+	}
 
 	return true;
 }
@@ -389,5 +455,20 @@ Image *RAS_OpenGLLight::GetTextureImage(short texslot)
 
 void RAS_OpenGLLight::Update()
 {
+	GPULamp *lamp;
+	KX_LightObject *kxlight = (KX_LightObject *)m_light;
+
+	if ((lamp = GetGPULamp()) != nullptr && kxlight->GetSGNode()) {
+		float obmat[4][4];
+		const MT_Transform trans(kxlight->NodeGetWorldPosition(), kxlight->NodeGetWorldOrientation());
+		trans.getValue(&obmat[0][0]);
+
+		int hide = kxlight->GetVisible() ? 0 : 1;
+		GPU_lamp_update(lamp, m_layer, hide, obmat);
+		GPU_lamp_update_colors(lamp, m_color[0], m_color[1],
+			m_color[2], m_energy);
+		GPU_lamp_update_distance(lamp, m_distance, m_att1, m_att2, m_coeff_const, m_coeff_lin, m_coeff_quad);
+		GPU_lamp_update_spot(lamp, m_spotsize, m_spotblend);
+	}
 }
 

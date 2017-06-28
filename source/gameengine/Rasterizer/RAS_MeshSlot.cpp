@@ -233,6 +233,7 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 		* (m_drawingmode != 0) is used to avoid crash when we press
 		* P while we are in wireframe viewport shading mode.
 		*/
+		KX_KetsjiEngine *engine = KX_GetActiveEngine();
 		GPUMaterial *gpumat = GetGpuMat();
 		if (gpumat && ((rasty->GetDrawingMode() != RAS_Rasterizer::RAS_SHADOW) && (rasty->GetDrawingMode() != RAS_Rasterizer::RAS_WIREFRAME))) {
 			GPUPass *pass = GPU_material_get_pass(gpumat);
@@ -312,6 +313,13 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 
 			int probetexloc = GPU_shader_get_uniform(shader, "probeCubes");
 			GPU_shader_uniform_texture(shader, probetexloc, scene->GetProbeTex());
+
+			// SHADOWS
+			int shadowtexloc = GPU_shader_get_uniform(shader, "shadowCubes");
+			GPU_shader_uniform_texture(shader, shadowtexloc, scene->GetShadowTex());
+
+			int shadowtexcolloc = GPU_shader_get_uniform(shader, "shadowCube");
+			GPU_shader_uniform_texture(shader, shadowtexcolloc, scene->GetShadowColorTex());
 
 			// MISCELLANEOUS
 			int gridcountloc = GPU_shader_get_uniform(shader, "grid_count");

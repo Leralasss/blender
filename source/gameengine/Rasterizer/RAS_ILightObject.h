@@ -42,6 +42,14 @@ class MT_Matrix4x4;
 
 struct Image;
 
+typedef struct EEVEE_ShadowRender {
+	float shadowmat[6][4][4]; /* World->Lamp->NDC : used to render the shadow map. 6 frustrum for cubemap shadow */
+	float position[3];
+	float pad;
+	int layer;
+	float exponent;
+} EEVEE_ShadowRender;
+
 class RAS_ILightObject
 {
 public:
@@ -67,6 +75,8 @@ public:
 	float	m_shadowbleedbias;
 	short	m_shadowmaptype;
 	float	m_shadowcolor[3];
+
+	EEVEE_ShadowRender m_shadowRenderData;
 
 	float	m_color[3];
 

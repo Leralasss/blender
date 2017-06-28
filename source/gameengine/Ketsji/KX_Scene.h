@@ -99,6 +99,7 @@ class KX_ObstacleSimulation;
 struct TaskPool;
 
 struct GPUUniformBuffer;
+struct GPUFrameBuffer;
 struct GPUTexture;
 
 /* for ID freeing */
@@ -146,12 +147,18 @@ protected:
 
 	// EEVEE DATA TEEEEEEEEEEEMP
 	EEVEE_Light m_lightsData[128];
+	EEVEE_ShadowCube m_shadowCubeData[42];
 	GPUUniformBuffer *m_lightsUbo;
+	GPUUniformBuffer *m_shadowUbo;
+	GPUUniformBuffer *m_shadowRenderUbo;
+	GPUFrameBuffer *m_shadowRenderFbo;
+	GPUFrameBuffer *m_shadowCubeTargetFbo;
+	GPUTexture *m_shadowColorTex;
+	GPUTexture *m_shadowTex;
 	GPUTexture *m_utilTex;
 	GPUTexture *m_probeTex;
 	int m_probeCount;
 	float m_probeLodMax;
-
 
 	KX_TextureRendererManager *m_rendererManager;
 	RAS_BucketManager*	m_bucketmanager;
@@ -338,6 +345,13 @@ public:
 	GPUTexture *GetProbeTex();
 	int GetProbeCount();
 	float GetProbeLodMax();
+	GPUTexture *GetShadowTex();
+	GPUTexture *GetShadowColorTex();
+	GPUUniformBuffer *GetShadowUbo();
+	GPUUniformBuffer *GetShadowRenderUbo();
+	GPUFrameBuffer *GetShadowRenderFbo();
+	GPUFrameBuffer *GetShadowCubeTargetFbo();
+	EEVEE_ShadowCube *GetShadowCubeData();
 
 	KX_Scene(SCA_IInputDevice *inputDevice,
 		const std::string& scenename,

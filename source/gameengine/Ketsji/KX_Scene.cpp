@@ -78,6 +78,10 @@
 #include "DNA_property_types.h"
 
 #include "GPU_texture.h"
+extern "C" {
+#include "GPU_uniformbuffer.h"
+#include "GPU_framebuffer.h"
+}
 
 #include "KX_SG_NodeRelationships.h"
 
@@ -217,11 +221,23 @@ KX_Scene::KX_Scene(SCA_IInputDevice *inputDevice,
 	m_utilTex = m_blenderScene->eevee_util_tex;
 	GPU_texture_bind(m_utilTex, 7);
 	m_lightsUbo = m_blenderScene->eevee_ubo;
+	GPU_uniformbuffer_bind(m_lightsUbo, 0);
 	
 	m_probeTex = m_blenderScene->eevee_probe_tex;
 	GPU_texture_bind(m_probeTex, 6);
 	m_probeCount = m_blenderScene->eevee_probe_count;
 	m_probeLodMax = m_blenderScene->eevee_lod_max;
+
+	m_shadowTex = m_blenderScene->eevee_shadow_tex;
+	GPU_texture_bind(m_shadowTex, 5);
+	m_shadowUbo = m_blenderScene->eevee_shadow_ubo;
+	GPU_uniformbuffer_bind(m_shadowUbo, 1);
+	m_shadowRenderUbo = m_blenderScene->eevee_shadow_render_ubo;
+	GPU_uniformbuffer_bind(m_shadowRenderUbo, 2);
+	m_shadowRenderFbo = scene->eevee_shadow_cube_fbo;
+	m_shadowCubeTargetFbo = scene->eevee_shadow_cube_target_fbo;
+	m_shadowColorTex = m_blenderScene->eevee_shadow_cube_color_target;
+
 
 #ifdef WITH_PYTHON
 	m_attr_dict = nullptr;
@@ -241,7 +257,15 @@ KX_Scene::~KX_Scene()
 	// reference might be hanging and causing late release of objects
 	RemoveAllDebugProperties();
 
-	GPU_texture_unbind(m_utilTex);
+	if (m_utilTex) {
+		GPU_texture_unbind(m_utilTex);
+	}
+	if (m_probeTex) {
+		GPU_texture_unbind(m_probeTex);
+	}
+	if (m_shadowTex) {
+		GPU_texture_unbind(m_shadowTex);
+	}
 
 	while (GetRootParentList()->GetCount() > 0) 
 	{
@@ -327,6 +351,36 @@ EEVEE_Light *KX_Scene::GetEeveeLightsData()
 	return m_lightsData;
 }
 
+GPUUniformBuffer *KX_Scene::GetShadowUbo()
+{
+	return m_shadowUbo;
+}
+
+GPUUniformBuffer *KX_Scene::GetShadowRenderUbo()
+{
+	return m_shadowRenderUbo;
+}
+
+EEVEE_ShadowCube *KX_Scene::GetShadowCubeData()
+{
+	return m_shadowCubeData;
+}
+
+GPUFrameBuffer *KX_Scene::GetShadowRenderFbo()
+{
+	return m_shadowRenderFbo;
+}
+
+GPUFrameBuffer *KX_Scene::GetShadowCubeTargetFbo()
+{
+	return m_shadowCubeTargetFbo;
+}
+
+GPUTexture *KX_Scene::GetShadowColorTex()
+{
+	return m_shadowColorTex;
+}
+
 GPUTexture *KX_Scene::GetUtilTex()
 {
 	return m_utilTex;
@@ -345,6 +399,11 @@ int KX_Scene::GetProbeCount()
 float KX_Scene::GetProbeLodMax()
 {
 	return m_probeLodMax;
+}
+
+GPUTexture *KX_Scene::GetShadowTex()
+{
+	return m_shadowTex;
 }
 
 std::string KX_Scene::GetName()

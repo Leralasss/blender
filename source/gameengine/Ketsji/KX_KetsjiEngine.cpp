@@ -75,6 +75,11 @@
 
 #include "KX_NavMeshObject.h"
 
+extern "C" {
+#include "GPU_uniformbuffer.h"
+#include "GPU_framebuffer.h"
+}
+
 #define DEFAULT_LOGIC_TIC_RATE 60.0
 
 #ifdef FREE_WINDOWS /* XXX mingw64 (gcc 4.7.0) defines a macro for DrawText that translates to DrawTextA. Not good */
@@ -827,51 +832,57 @@ void KX_KetsjiEngine::UpdateAnimations(KX_Scene *scene)
 
 void KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
 {
-	//CListValue<KX_LightObject> *lightlist = scene->GetLightList();
+	CListValue<KX_LightObject> *lightlist = scene->GetLightList();
 
-	//m_rasterizer->SetAuxilaryClientInfo(scene);
+	m_rasterizer->SetAuxilaryClientInfo(scene);
 
-	//for (KX_LightObject *light : lightlist) {
-	//	RAS_ILightObject *raslight = light->GetLightData();
+	GPU_uniformbuffer_update(scene->GetShadowUbo(), (const void *)scene->GetShadowCubeData());
 
-	//	raslight->Update();
+	for (KX_LightObject *light : lightlist) {
+		RAS_ILightObject *raslight = light->GetLightData();
 
-	//	if (light->GetVisible() && m_rasterizer->GetDrawingMode() == RAS_Rasterizer::RAS_TEXTURED &&
-	//		raslight->HasShadowBuffer() && raslight->NeedShadowUpdate())
-	//	{
-	//		/* make temporary camera */
-	//		RAS_CameraData camdata = RAS_CameraData();
-	//		KX_Camera *cam = new KX_Camera(scene, scene->m_callbacks, camdata, true, true);
-	//		cam->SetName("__shadow__cam__");
+		raslight->Update();
 
-	//		MT_Transform camtrans;
+		
+		/* make temporary camera */
+		RAS_CameraData camdata = RAS_CameraData();
+		KX_Camera *cam = new KX_Camera(scene, scene->m_callbacks, camdata, true, true);
+		cam->SetName("__shadow__cam__");
 
-	//		/* switch drawmode for speed */
-	//		RAS_Rasterizer::DrawType drawmode = m_rasterizer->GetDrawingMode();
-	//		m_rasterizer->SetDrawingMode(RAS_Rasterizer::RAS_SHADOW);
+		MT_Transform camtrans;
 
-	//		/* binds framebuffer object, sets up camera .. */
-	//		raslight->BindShadowBuffer(m_canvas, cam, camtrans);
+		/* switch drawmode for speed */
+		RAS_Rasterizer::DrawType drawmode = m_rasterizer->GetDrawingMode();
+		m_rasterizer->SetDrawingMode(RAS_Rasterizer::RAS_SHADOW);
 
-	//		KX_CullingNodeList nodes;
-	//		/* update scene */
-	//		scene->CalculateVisibleMeshes(nodes, cam, raslight->GetShadowLayer());
+		/* binds framebuffer object, sets up camera .. */
+		//raslight->BindShadowBuffer(m_canvas, cam, camtrans);
 
-	//		m_logger.StartLog(tc_animations, m_kxsystem->GetTimeInSeconds());
-	//		UpdateAnimations(scene);
-	//		m_logger.StartLog(tc_rasterizer, m_kxsystem->GetTimeInSeconds());
+		GPU_uniformbuffer_update(scene->GetShadowRenderUbo(), &raslight->m_shadowRenderData);
 
-	//		/* render */
-	//		m_rasterizer->Clear(RAS_Rasterizer::RAS_DEPTH_BUFFER_BIT | RAS_Rasterizer::RAS_COLOR_BUFFER_BIT);
-	//		// Send a nullptr off screen because the viewport is binding it's using its own private one.
-	//		scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
+		KX_CullingNodeList nodes;
+		/* update scene */
+		scene->CalculateVisibleMeshes(nodes, cam, 0);
 
-	//		/* unbind framebuffer object, restore drawmode, free camera */
-	//		raslight->UnbindShadowBuffer();
-	//		m_rasterizer->SetDrawingMode(drawmode);
-	//		cam->Release();
-	//	}
-	//}
+		m_logger.StartLog(tc_animations, m_kxsystem->GetTimeInSeconds());
+		UpdateAnimations(scene);
+		m_logger.StartLog(tc_rasterizer, m_kxsystem->GetTimeInSeconds());
+
+		GPU_framebuffer_bind(scene->GetShadowRenderFbo());
+
+		/* render */
+		m_rasterizer->Clear(RAS_Rasterizer::RAS_DEPTH_BUFFER_BIT | RAS_Rasterizer::RAS_COLOR_BUFFER_BIT);
+		
+
+		// Send a nullptr off screen because the viewport is binding it's using its own private one.
+		scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
+
+		/* unbind framebuffer object, restore drawmode, free camera */
+		GPU_framebuffer_restore();
+
+		m_rasterizer->SetDrawingMode(drawmode);
+		cam->Release();
+	}
 }
 
 MT_Matrix4x4 KX_KetsjiEngine::GetCameraProjectionMatrix(KX_Scene *scene, KX_Camera *cam, RAS_Rasterizer::StereoEye eye,

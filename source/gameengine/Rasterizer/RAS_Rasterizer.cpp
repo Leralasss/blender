@@ -1271,8 +1271,7 @@ void RAS_Rasterizer::ProcessLighting(bool uselights, const MT_Transform& viewmat
 		GPUUniformBuffer *lightsUbo = kxscene->GetLightsUbo();
 
 		// UPDATE/BIND EEVEE LIGHT DATA
-		GPU_uniformbuffer_update(lightsUbo , (const void *)lightsData);
-		GPU_uniformbuffer_bind(lightsUbo, 0);
+		GPU_uniformbuffer_update(lightsUbo, (const void *)lightsData);
 
 		// light_count EEVEE uniform
 		int lightcountloc = GPU_shader_get_uniform(shader, "light_count");
