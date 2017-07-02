@@ -19,7 +19,7 @@
  *
  */
 
-/** \file eevee_engine.h
+/** \file eeveeg_engine.h
  *  \ingroup DNA
  */
 

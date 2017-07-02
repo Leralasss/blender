@@ -82,16 +82,11 @@ set(SRC
 	engines/clay/clay_engine.c
 	engines/eevee/eevee_data.c
 	engines/eevee/eevee_engine.c
+	engines/game/eeveeg_engine.c
 	engines/eevee/eevee_lights.c
 	engines/eevee/eevee_lightprobes.c
 	engines/eevee/eevee_materials.c
 	engines/eevee/eevee_effects.c
-	engines/game/eeveeg_data.c
-	engines/game/eeveeg_engine.c
-	engines/game/eeveeg_lights.c
-	engines/game/eeveeg_lightprobes.c
-	engines/game/eeveeg_materials.c
-	engines/game/eeveeg_effects.c
 	engines/external/external_engine.c
 
 	DRW_engine.h
@@ -105,11 +100,9 @@ set(SRC
 	engines/basic/basic_engine.h
 	engines/clay/clay_engine.h
 	engines/eevee/eevee_engine.h
+	engines/eevee/eeveeg_engine.h
 	engines/eevee/eevee_lut.h
 	engines/eevee/eevee_private.h
-	engines/game/eeveeg_engine.h
-	engines/game/eeveeg_lut.h
-	engines/game/eeveeg_private.h
 	engines/external/external_engine.h
 )
 
