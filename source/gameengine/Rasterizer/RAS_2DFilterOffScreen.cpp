@@ -74,11 +74,12 @@ void RAS_2DFilterOffScreen::Construct()
 
 		// WARNING: Always respect the order from RAS_Rasterizer::HdrType.
 		static const GPUTextureFormat dataTypeEnums[] = {
+			GPU_RGBA8, // RAS_HDR_NONE
 			GPU_RGBA16F, // RAS_HDR_HALF_FLOAT
 			GPU_RGBA32F // RAS_HDR_FULL_FLOAT
 		};
 
-		texture = GPU_texture_create_2D_custom(m_width, m_height, 4, GPU_RGBA16F, 0, nullptr, nullptr);
+		texture = GPU_texture_create_2D_custom(m_width, m_height, 4, GPU_RGBA16F /*dataTypeEnums[m_hdr]. For ToneMapping we need RGBA16F*/, 0, nullptr, nullptr);
 		if (!GPU_framebuffer_texture_attach(m_frameBuffer, texture, i, 0)) {
 			GPU_texture_free(texture);
 			texture = nullptr;
