@@ -124,7 +124,6 @@ inline RAS_OffScreen *RAS_Rasterizer::OffScreens::GetOffScreen(OffScreenType typ
 
 			// WARNING: Always respect the order from RAS_Rasterizer::HdrType.
 			static const GPUTextureFormat dataTypeEnums[] = {
-				GPU_RGBA8, // RAS_HDR_NONE
 				GPU_RGBA16F, // RAS_HDR_HALF_FLOAT
 				GPU_RGBA32F // RAS_HDR_FULL_FLOAT
 			};
