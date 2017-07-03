@@ -44,6 +44,10 @@ set(INC
 	../../blender/blenkernel
 	../../blender/blenlib
 	../../blender/blenloader
+	../../blender/blentranslation
+	../../blender/draw
+	../../blender/draw/intern
+	../../blender/draw/engines/eevee
 	../../blender/gpu
 	../../blender/imbuf
 	../../blender/makesdna
@@ -52,7 +56,8 @@ set(INC
 	../../blender/python/generic
 	../../blender/python/mathutils
 	../../blender/python/intern
-	../../blender/draw/engines/eevee/shaders
+	../../blender/render/extern/include
+	../../blender/render/intern/include
 	../../../intern/glew-mx
 	../../../intern/guardedalloc
 )
