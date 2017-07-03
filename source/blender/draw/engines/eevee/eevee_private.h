@@ -356,6 +356,22 @@ typedef struct EEVEE_SceneLayerData {
 	struct ListBase probe_queue; /* List of probes to update */
 } EEVEE_SceneLayerData;
 
+typedef struct EEVEE_UTIL_DATA {
+	char *frag_shader_lib;
+
+	struct GPUShader *default_prepass_sh;
+	struct GPUShader *default_prepass_clip_sh;
+	struct GPUShader *default_lit[VAR_MAT_MAX];
+
+	struct GPUShader *default_background;
+
+	/* 64*64 array texture containing all LUTs and other utilitarian arrays.
+	* Packing enables us to same precious textures slots. */
+	struct GPUTexture *util_tex;
+
+	float viewvecs[2][4];
+} EEVEE_UTIL_DATA;
+
 /* ************ OBJECT DATA ************ */
 typedef struct EEVEE_LampEngineData {
 	bool need_update;
@@ -446,6 +462,9 @@ void EEVEE_effects_cache_init(EEVEE_Data *vedata);
 void EEVEE_create_minmax_buffer(EEVEE_Data *vedata, struct GPUTexture *depth_src);
 void EEVEE_draw_effects(EEVEE_Data *vedata);
 void EEVEE_effects_free(void);
+
+/* Game Engine Data Getter */
+EEVEE_UTIL_DATA *EEVEE_util_data_get();
 
 /* Shadow Matrix */
 static const float texcomat[4][4] = { /* From NDC to TexCo */

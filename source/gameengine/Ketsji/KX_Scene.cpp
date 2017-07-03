@@ -330,6 +330,11 @@ void KX_Scene::SetSceneLayerData(EEVEE_SceneLayerData *data)
 	m_sldata = data;
 }
 
+void KX_Scene::SetEeveeUtilData(EEVEE_UTIL_DATA *data)
+{
+	m_edata = data;
+}
+
 // EEVEE DATA GET
 
 // lights
@@ -346,7 +351,7 @@ EEVEE_Light *KX_Scene::GetEeveeLightsData()
 // utilTex
 GPUTexture *KX_Scene::GetUtilTex()
 {
-	return m_utilTex;
+	return m_edata->util_tex;
 }
 
 // Probes (only world Probe for now)

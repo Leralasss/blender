@@ -149,6 +149,7 @@ protected:
 	// lights
 	EEVEE_Light m_lightsData[128];
 	EEVEE_SceneLayerData *m_sldata;
+	EEVEE_UTIL_DATA *m_edata;
 	GPUUniformBuffer *m_lightsUbo;
 	// utilTex
 	GPUTexture *m_utilTex;
@@ -341,6 +342,7 @@ public:
 
 	//EEVEE GET DATA TEEEEEEEEEEEEEMP
 	void SetSceneLayerData(EEVEE_SceneLayerData *data);
+	void SetEeveeUtilData(EEVEE_UTIL_DATA *data);
 	// utilTex
 	GPUTexture *GetUtilTex();
 	// lights
