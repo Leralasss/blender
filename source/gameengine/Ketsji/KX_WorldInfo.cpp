@@ -54,6 +54,7 @@ KX_WorldInfo::KX_WorldInfo(Scene *blenderscene, World *blenderworld)
 	:m_scene(blenderscene)
 {
 	if (blenderworld) {
+		m_blenderWorld = blenderworld;
 		m_name = blenderworld->id.name + 2;
 		m_do_color_management = BKE_scene_check_color_management_enabled(blenderscene);
 		m_hasworld = true;
@@ -206,7 +207,7 @@ void KX_WorldInfo::UpdateWorldSettings(RAS_Rasterizer *rasty)
 void KX_WorldInfo::RenderBackground(RAS_Rasterizer *rasty)
 {
 	if (m_hasworld) {
-		if (m_scene->world->skytype & (WO_SKYBLEND | WO_SKYPAPER | WO_SKYREAL)) {
+		if (m_blenderWorld->use_nodes && m_blenderWorld->nodetree) {
 			GPUMaterial *gpumat = GPU_material_world(m_scene, m_scene->world);
 			float viewmat[4][4];
 			rasty->GetViewMatrix().getValue(&viewmat[0][0]);
@@ -239,7 +240,7 @@ void KX_WorldInfo::RenderBackground(RAS_Rasterizer *rasty)
 		/* Grey color computed by linearrgb_to_srgb_v3_v3 with a color of
 		 * 0.050, 0.050, 0.050 (the default world horizon color).
 		 */
-		rasty->SetClearColor(0.247784f, 0.247784f, 0.247784f, 1.0f);
+		rasty->SetClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 		rasty->Clear(RAS_Rasterizer::RAS_COLOR_BUFFER_BIT);
 	}
 }

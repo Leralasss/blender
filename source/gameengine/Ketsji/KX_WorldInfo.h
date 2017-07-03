@@ -68,6 +68,7 @@ class KX_WorldInfo : public PyObjectPlus
 	MT_Vector3 m_ambientcolor;
 	MT_Vector3 m_con_mistcolor;
 	MT_Vector3 m_con_ambientcolor;
+	World *m_blenderWorld;
 
 public:
 	/**
