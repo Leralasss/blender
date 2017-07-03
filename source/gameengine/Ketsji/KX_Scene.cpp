@@ -157,7 +157,10 @@ KX_Scene::KX_Scene(SCA_IInputDevice *inputDevice,
 	m_suspendeddelta(0.0),
 	m_blenderScene(scene),
 	m_isActivedHysteresis(false),
-	m_lodHysteresisValue(0)
+	m_lodHysteresisValue(0),
+	m_irradianceTexBound(false),
+	m_probeTexBound(false),
+	m_utilTexBound(false)
 {
 
 	m_dbvt_culling = false;
@@ -211,26 +214,7 @@ KX_Scene::KX_Scene(SCA_IInputDevice *inputDevice,
 		m_obstacleSimulation = nullptr;
 	}
 
-	m_animationPool = BLI_task_pool_create(KX_GetActiveEngine()->GetTaskScheduler(), &m_animationPoolData);
-
-	//Set EEVEE DATA TEEEEEEEEEEMP
-	// utilTex
-	m_utilTex = m_blenderScene->eevee_util_tex;
-	GPU_texture_bind(m_utilTex, 7);
-
-	// lights
-	m_lightsUbo = m_blenderScene->eevee_ubo;
-	
-	// Probes
-	m_probeTex = m_blenderScene->eevee_probe_tex;
-	GPU_texture_bind(m_probeTex, 6);
-	m_probeCount = m_blenderScene->eevee_probe_count;
-	m_probeLodMax = m_blenderScene->eevee_lod_max;
-
-	// Irradiance grid
-	m_irradianceTex = m_blenderScene->eevee_irradiance_grid;
-	GPU_texture_bind(m_irradianceTex, 5);
-	m_irradianceCount = m_blenderScene->eevee_grid_count;
+	m_animationPool = BLI_task_pool_create(KX_GetActiveEngine()->GetTaskScheduler(), &m_animationPoolData);	
 
 #ifdef WITH_PYTHON
 	m_attr_dict = nullptr;
@@ -249,8 +233,6 @@ KX_Scene::~KX_Scene()
 	// It's still there but we remove all properties here otherwise some
 	// reference might be hanging and causing late release of objects
 	RemoveAllDebugProperties();
-
-	GPU_texture_unbind(m_utilTex);
 
 	while (GetRootParentList()->GetCount() > 0) 
 	{
@@ -325,12 +307,13 @@ KX_Scene::~KX_Scene()
 #endif
 }
 
+// EEVEE DATA SET
 void KX_Scene::SetSceneLayerData(EEVEE_SceneLayerData *data)
 {
 	m_sldata = data;
 }
 
-void KX_Scene::SetEeveeUtilData(EEVEE_UTIL_DATA *data)
+void KX_Scene::SetEeveeUtilData(EEVEE_UtilData *data)
 {
 	m_edata = data;
 }
@@ -351,34 +334,46 @@ EEVEE_Light *KX_Scene::GetEeveeLightsData()
 // utilTex
 GPUTexture *KX_Scene::GetUtilTex()
 {
+	if (!m_utilTexBound) {
+		GPU_texture_bind(m_edata->util_tex, 7);
+		m_utilTexBound = true;
+	}
 	return m_edata->util_tex;
 }
 
 // Probes (only world Probe for now)
 GPUTexture *KX_Scene::GetProbeTex()
 {
-	return m_probeTex;
+	if (!m_probeTexBound) {
+		GPU_texture_bind(m_sldata->probe_pool, 6);
+		m_probeTexBound = true;
+	}
+	return m_sldata->probe_pool;
 }
 
 int KX_Scene::GetProbeCount() // 1 = world default probe
 {
-	return m_probeCount;
+	return m_sldata->probes->num_render_cube;
 }
 
 float KX_Scene::GetProbeLodMax()
 {
-	return m_probeLodMax;
+	return m_sldata->probes->lodmax;
 }
 
 // Irradiance grid
 GPUTexture *KX_Scene::GetIrradianceTex()
 {
-	return m_irradianceTex;
+	if (!m_irradianceTexBound) {
+		GPU_texture_bind(m_sldata->irradiance_pool, 5);
+		m_irradianceTexBound = true;
+	}
+	return m_sldata->irradiance_pool;
 }
 
 int KX_Scene::GetIrradianceCount()
 {
-	return m_irradianceCount;
+	return m_sldata->probes->num_render_grid;
 }
 std::string KX_Scene::GetName()
 {

@@ -59,7 +59,7 @@
 	SHADER_IRRADIANCE
 
 /* *********** STATIC *********** */
-static EEVEE_UTIL_DATA e_data = { NULL }; /* Engine data */
+static EEVEE_UtilData e_data = { NULL }; /* Engine data */
 
 extern char datatoc_ambient_occlusion_lib_glsl[];
 extern char datatoc_prepass_frag_glsl[];
@@ -207,21 +207,6 @@ static void add_standard_uniforms(DRWShadingGroup *shgrp, EEVEE_SceneLayerData *
 		DRW_shgroup_uniform_buffer(shgrp, "minMaxDepthTex", &vedata->stl->g_data->minmaxz);
 		DRW_shgroup_uniform_vec3(shgrp, "aoParameters", &vedata->stl->effects->ao_dist, 1);
 	}
-
-	const DRWContextState *draw_ctx = DRW_context_state_get();
-
-	Scene *scene = draw_ctx->scene;
-	// utilTex
-	scene->eevee_util_tex = e_data.util_tex;
-	// lights
-	scene->eevee_ubo = sldata->light_ubo;
-	// Probes
-	scene->eevee_probe_count = sldata->probes->num_render_cube;
-	scene->eevee_probe_tex = sldata->probe_pool;
-	scene->eevee_lod_max = sldata->probes->lodmax;
-	// irradiance grid
-	scene->eevee_irradiance_grid = sldata->irradiance_pool;
-	scene->eevee_grid_count = sldata->probes->num_render_grid;
 }
 
 static void create_default_shader(int options)
@@ -733,7 +718,7 @@ void EEVEE_draw_default_passes(EEVEE_PassList *psl)
 	}
 }
 
-EEVEE_UTIL_DATA *EEVEE_util_data_get()
+EEVEE_UtilData *EEVEE_util_data_get()
 {
 	return &e_data;
 }

@@ -145,21 +145,11 @@ private:
 
 protected:
 
-	// EEVEE DATA TEEEEEEEEEEEMP
+	// EEVEE DATA
 	// lights
 	EEVEE_Light m_lightsData[128];
 	EEVEE_SceneLayerData *m_sldata;
-	EEVEE_UTIL_DATA *m_edata;
-	GPUUniformBuffer *m_lightsUbo;
-	// utilTex
-	GPUTexture *m_utilTex;
-	// Probes
-	GPUTexture *m_probeTex;
-	int m_probeCount;
-	float m_probeLodMax;
-	// irradiance grid
-	GPUTexture *m_irradianceTex;
-	int m_irradianceCount;
+	EEVEE_UtilData *m_edata;
 
 
 	KX_TextureRendererManager *m_rendererManager;
@@ -340,9 +330,15 @@ protected:
 
 public:
 
-	//EEVEE GET DATA TEEEEEEEEEEEEEMP
+	// EEVEE SET DATA
 	void SetSceneLayerData(EEVEE_SceneLayerData *data);
-	void SetEeveeUtilData(EEVEE_UTIL_DATA *data);
+	void SetEeveeUtilData(EEVEE_UtilData *data);
+
+	bool m_utilTexBound;
+	bool m_irradianceTexBound;
+	bool m_probeTexBound;
+
+	// EEVEE GET DATA
 	// utilTex
 	GPUTexture *GetUtilTex();
 	// lights
