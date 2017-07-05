@@ -400,9 +400,6 @@ struct GPUMaterial *EEVEE_material_mesh_get(
 
 	MEM_freeN(defines);
 
-	// For Game Engine
-	ma->eevee_material = mat;
-
 	return mat;
 }
 
