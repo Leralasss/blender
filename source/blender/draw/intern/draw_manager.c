@@ -3036,7 +3036,7 @@ void DRW_draw_render_loop_ex(
 
 #ifdef DEBUG
 	/* Avoid accidental reuse. */
-	memset(&DST, 0xFF, sizeof(DST));
+	//memset(&DST, 0xFF, sizeof(DST));
 #endif
 }
 
