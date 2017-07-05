@@ -77,8 +77,6 @@
 #include "DNA_scene_types.h"
 #include "DNA_property_types.h"
 
-#include "GPU_texture.h"
-
 #include "KX_SG_NodeRelationships.h"
 
 #include "KX_NetworkMessageScene.h"
