@@ -228,11 +228,11 @@ void EEVEE_add_standard_uniforms_game(DRWShadingGroup *shgrp, EEVEE_SceneLayerDa
 	DRW_shgroup_uniform_buffer(shgrp, "irradianceGrid", &sldata->irradiance_pool);
 	DRW_shgroup_uniform_buffer(shgrp, "shadowCubes", &sldata->shadow_depth_cube_pool);
 	DRW_shgroup_uniform_buffer(shgrp, "shadowCascades", &sldata->shadow_depth_cascade_pool);
-	/*if (vedata->stl->effects->use_ao) {
+	if (vedata->stl->effects->use_ao) {
 		DRW_shgroup_uniform_vec4(shgrp, "viewvecs[0]", (float *)e_data.viewvecs, 2);
 		DRW_shgroup_uniform_buffer(shgrp, "minMaxDepthTex", &vedata->stl->g_data->minmaxz);
 		DRW_shgroup_uniform_vec3(shgrp, "aoParameters", &vedata->stl->effects->ao_dist, 1);
-	}*/
+	}
 }
 
 static void create_default_shader(int options)

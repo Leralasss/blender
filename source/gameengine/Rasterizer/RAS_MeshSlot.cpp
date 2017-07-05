@@ -218,84 +218,11 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 		rasty->IndexPrimitivesDerivedMesh(this);
 	}
 	else {
-		/* For blender shaders (not custom), we need
-		* to bind shader to update uniforms.
-		* In shadow pass for now, we don't update
-		* the ShaderInterface uniforms because
-		* GPUMaterial is not accessible (RenderShadowBuffer
-		* is called before main rendering and the GPUMaterial
-		* is bound only when we do the main rendering).
-		* Refs: - For drawing mode, rasterizer drawing mode is
-		* set to RAS_SHADOWS in KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
-		* - To see the order of rendering operations, this is in
-		* KX_KetsjiEngine::Render() (RenderShadowBuffers is called
-		* at the begining of Render()
-		* (m_drawingmode != 0) is used to avoid crash when we press
-		* P while we are in wireframe viewport shading mode.
-		*/
 		if (((rasty->GetDrawingMode() != RAS_Rasterizer::RAS_SHADOW) && (rasty->GetDrawingMode() != RAS_Rasterizer::RAS_WIREFRAME))) {
 
 			GPU_shader_bind(m_gpuShader);
 
-			rasty->ProcessLighting(materialData->m_useLighting, managerData->m_trans, m_gpuShader);
-
-			KX_Scene *scene = KX_GetActiveScene();
-			KX_Camera *cam = scene->GetActiveCamera();
-
-			// lit surface frag uniforms
-			int projloc = GPU_shader_get_uniform(m_gpuShader, "ProjectionMatrix");
-			int viewinvloc = GPU_shader_get_uniform(m_gpuShader, "ViewMatrixInverse");
-			int viewloc = GPU_shader_get_uniform(m_gpuShader, "ViewMatrix");
-			// lit surface vert uniforms
-			int modelviewprojloc = GPU_shader_get_uniform(m_gpuShader, "ModelViewProjectionMatrix");
-			int modelloc = GPU_shader_get_uniform(m_gpuShader, "ModelMatrix");
-			int modelviewloc = GPU_shader_get_uniform(m_gpuShader, "ModelViewMatrix");
-			int worldnormloc = GPU_shader_get_uniform(m_gpuShader, "WorldNormalMatrix");
-			int normloc = GPU_shader_get_uniform(m_gpuShader, "NormalMatrix");
-
-			MT_Matrix4x4 proj(cam->GetProjectionMatrix());
-			MT_Matrix4x4 view(rasty->GetViewMatrix());
-			MT_Matrix4x4 viewinv(rasty->GetViewInvMatrix());
-			MT_Matrix4x4 model(m_meshUser->GetMatrix());
-			MT_Matrix4x4 modelview(rasty->GetViewMatrix() * model);
-			MT_Matrix4x4 modelviewproj(proj * modelview);
-			MT_Matrix4x4 worldnorm(model.inverse());
-			MT_Matrix4x4 norm(viewinv * worldnorm);
-
-			float projf[16];
-			float viewf[16];
-			float viewinvf[16];
-			float modelviewprojf[16];
-			float modelf[16];
-			float modelviewf[16];
-			float worldnormf[9];
-			float normf[9];
-
-			proj.getValue(projf);
-			view.getValue(viewf);
-			viewinv.getValue(viewinvf);
-			modelviewproj.getValue(modelviewprojf);
-			model.getValue(modelf);
-			modelview.getValue(modelviewf);
-
-			int k = 0;
-			for (int i = 0; i < 3; i++) {
-				for (int j = 0; j < 3; j++) {
-					worldnormf[k] = worldnorm[i][j];
-					normf[k] = norm[i][j];
-					k++;
-				}
-			}
-
-			// MATRICES
-			GPU_shader_uniform_vector(m_gpuShader, projloc, 16, 1, (float *)projf);
-			GPU_shader_uniform_vector(m_gpuShader, viewloc, 16, 1, (float *)viewf);
-			GPU_shader_uniform_vector(m_gpuShader, viewinvloc, 16, 1, (float *)viewinvf);
-			GPU_shader_uniform_vector(m_gpuShader, modelviewprojloc, 16, 1, (float *)modelviewprojf);
-			GPU_shader_uniform_vector(m_gpuShader, modelloc, 16, 1, (float *)modelf);
-			GPU_shader_uniform_vector(m_gpuShader, modelviewloc, 16, 1, (float *)modelviewf);
-			GPU_shader_uniform_vector(m_gpuShader, worldnormloc, 9, 1, (float *)worldnormf);
-			GPU_shader_uniform_vector(m_gpuShader, normloc, 16, 9, (float *)normf);
+			rasty->ProcessLighting(materialData->m_useLighting, managerData->m_trans, m_gpuShader);			
 		}
 		rasty->IndexPrimitives(displayArrayData->m_storageInfo);
 	}

@@ -289,7 +289,7 @@ void KX_BlenderMaterial::Desactivate(RAS_Rasterizer *rasty)
 			}
 		}
 	}
-	else if (m_blenderShader && m_blenderShader->Ok()) {
+	else if (m_blenderShader) {
 		m_blenderShader->SetProg(false);
 	}
 	// Make sure no one will use the attributs set by this material.
@@ -330,7 +330,7 @@ bool KX_BlenderMaterial::UsesLighting() const
 
 	if (m_shader && m_shader->Ok())
 		return true;
-	else if (m_blenderShader && m_blenderShader->Ok())
+	else if (m_blenderShader)
 		return false;
 	else
 		return true;

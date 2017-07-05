@@ -134,11 +134,11 @@ void BL_BlenderShader::SetProg(bool enable, double time, RAS_Rasterizer *rasty)
 		DRW_draw_shgroup(m_shGroup, (DRWState)(
 			DRW_STATE_WRITE_DEPTH |
 			DRW_STATE_DEPTH_LESS |
-			//DRW_STATE_CULL_BACK |
+			DRW_STATE_CULL_BACK |
 			DRW_STATE_WRITE_COLOR));
 	}
 	else {
-		//GPU_material_unbind(m_gpuMat);
+		GPU_shader_unbind();
 	}
 }
 
@@ -153,8 +153,6 @@ void BL_BlenderShader::SetAttribs(RAS_Rasterizer *ras)
 void BL_BlenderShader::Update(RAS_MeshSlot *ms, RAS_Rasterizer *rasty)
 {
 	ms->SetGpuShader(m_gpuShader);
-
-	//float *obcol = (float *)ms->m_meshUser->GetColor().getValue();
 
 	DRW_draw_geometry_prepare(m_shGroup, (float(*)[4])ms->m_meshUser->GetMatrix(), nullptr, nullptr);
 
