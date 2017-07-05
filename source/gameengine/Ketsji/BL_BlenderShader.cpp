@@ -60,7 +60,12 @@ BL_BlenderShader::BL_BlenderShader(KX_Scene *scene, struct Material *ma, int lig
 
 BL_BlenderShader::~BL_BlenderShader()
 {
-	if (m_shGroup) {
+	/* In the case the material use nodes, we create a DRWShadingGroup,
+	 * so we need to free it at game engine exit. But if the material
+	 * doesn't use nodes, we use existing shading group in eevee so if
+	 * we free it, it causes a crash at game engine exit.
+	 */
+	if (m_shGroup && m_mat && m_mat->use_nodes && m_mat->nodetree) {
 		DRW_shgroup_free(m_shGroup);
 	}
 }
