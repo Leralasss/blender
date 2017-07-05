@@ -430,7 +430,7 @@ struct GPUMaterial *EEVEE_material_hair_get(
 	return mat;
 }
 
-static struct DRWShadingGroup *EEVEE_default_shading_group_get(
+struct DRWShadingGroup *EEVEE_default_shading_group_get(
         EEVEE_SceneLayerData *sldata, EEVEE_Data *vedata,
         bool is_hair, bool is_flat_normal, bool use_ao, bool use_bent_normals)
 {

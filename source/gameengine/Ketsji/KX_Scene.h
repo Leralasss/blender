@@ -149,7 +149,7 @@ protected:
 	// lights
 	EEVEE_Light m_lightsData[128];
 	EEVEE_SceneLayerData *m_sldata;
-	EEVEE_UtilData *m_edata;
+	EEVEE_UtilData *m_udata;
 
 
 	KX_TextureRendererManager *m_rendererManager;
@@ -334,25 +334,14 @@ public:
 	void SetSceneLayerData(EEVEE_SceneLayerData *data);
 	void SetEeveeUtilData(EEVEE_UtilData *data);
 
-	bool m_utilTexBound;
-	bool m_irradianceTexBound;
-	bool m_probeTexBound;
-
 	// EEVEE GET DATA
 	// sldata
 	EEVEE_SceneLayerData *GetSceneLayerData();
-	// utilTex
-	GPUTexture *GetUtilTex();
 	// lights
 	GPUUniformBuffer *GetLightsUbo();
 	EEVEE_Light *GetEeveeLightsData();
-	// Probes
-	GPUTexture *GetProbeTex();
-	int GetProbeCount();
-	float GetProbeLodMax();
-	// irradiance grid
-	GPUTexture *GetIrradianceTex();
-	int GetIrradianceCount();
+	// utildata
+	EEVEE_UtilData *GetUtilData();
 
 	KX_Scene(SCA_IInputDevice *inputDevice,
 		const std::string& scenename,

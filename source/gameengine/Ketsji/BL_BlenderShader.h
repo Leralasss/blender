@@ -39,7 +39,7 @@
 
 struct Material;
 struct Scene;
-struct GPUMaterial;
+struct GPUShader;
 class KX_Scene;
 class RAS_MeshSlot;
 struct DRWShadingGroup;
@@ -55,7 +55,7 @@ private:
 	Material *m_mat;
 	int m_lightLayer;
 	int m_alphaBlend;
-	GPUMaterial *m_gpuMat;
+	GPUShader *m_gpuShader;
 	DRWShadingGroup *m_shGroup;
 
 	/// The material attributes passed to the rasterizer.

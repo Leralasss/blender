@@ -439,6 +439,9 @@ struct GPUMaterial *EEVEE_material_hair_get(struct Scene *scene, Material *ma, b
 void EEVEE_materials_free(void);
 void EEVEE_draw_default_passes(EEVEE_PassList *psl);
 void EEVEE_add_standard_uniforms_game(struct DRWShadingGroup *shgrp, EEVEE_SceneLayerData *sldata, EEVEE_Data *vedata);
+struct DRWShadingGroup *EEVEE_default_shading_group_get(
+	EEVEE_SceneLayerData *sldata, EEVEE_Data *vedata,
+	bool is_hair, bool is_flat_normal, bool use_ao, bool use_bent_normals);
 
 /* eevee_lights.c */
 void EEVEE_lights_init(EEVEE_SceneLayerData *sldata);

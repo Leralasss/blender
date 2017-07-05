@@ -274,7 +274,7 @@ void KX_BlenderMaterial::Activate(RAS_Rasterizer *rasty)
 	if (m_shader && m_shader->Ok()) {
 		ActivateShaders(rasty);
 	}
-	else if (m_blenderShader && m_blenderShader->Ok()) {
+	else if (m_blenderShader) {
 		ActivateBlenderShaders(rasty);
 	}
 }

@@ -45,17 +45,7 @@ extern "C" {
 #  include "eevee_engine.h"
 #  include "DRW_engine.h"
 #  include "DRW_render.h"
-}
-
-extern "C" {
-	extern char datatoc_ltc_lib_glsl[];
-	extern char datatoc_bsdf_common_lib_glsl[];
-	extern char datatoc_bsdf_direct_lib_glsl[];
-	extern char datatoc_lit_surface_frag_glsl[];
-	extern char datatoc_lit_surface_vert_glsl[];
-	extern char datatoc_irradiance_lib_glsl[];
-	extern char datatoc_octahedron_lib_glsl[];
-	extern char datatoc_ambient_occlusion_lib_glsl[];
+#  include "../blender/gpu/intern/gpu_codegen.h"
 }
 
 BL_BlenderShader::BL_BlenderShader(KX_Scene *scene, struct Material *ma, int lightlayer)
@@ -63,7 +53,6 @@ BL_BlenderShader::BL_BlenderShader(KX_Scene *scene, struct Material *ma, int lig
 	m_mat(ma),
 	m_lightLayer(lightlayer),
 	m_alphaBlend(GPU_BLEND_SOLID),
-	m_gpuMat(nullptr),
 	m_shGroup(nullptr)
 {
 	ReloadMaterial(scene);
@@ -79,130 +68,92 @@ BL_BlenderShader::~BL_BlenderShader()
 const RAS_Rasterizer::AttribLayerList BL_BlenderShader::GetAttribLayers(const RAS_MeshObject::LayersInfo& layersInfo) const
 {
 	RAS_Rasterizer::AttribLayerList attribLayers;
-	GPUVertexAttribs attribs;
-	GPU_material_vertex_attributes(m_gpuMat, &attribs);
-
-	for (unsigned int i = 0; i < attribs.totlayer; ++i) {
-		if (attribs.layer[i].type == CD_MTFACE || attribs.layer[i].type == CD_MCOL) {
-			const char *attribname = attribs.layer[i].name;
-			if (strlen(attribname) == 0) {
-				// The color or uv layer is not specified, then use the active color or uv layer.
-				if (attribs.layer[i].type == CD_MTFACE) {
-					attribLayers[attribs.layer[i].glindex] = layersInfo.activeUv;
-				}
-				else {
-					attribLayers[attribs.layer[i].glindex] = layersInfo.activeColor;
-				}
-				continue;
-			}
-
-			for (RAS_MeshObject::LayerList::const_iterator it = layersInfo.layers.begin(), end = layersInfo.layers.end();
-				it != end; ++it) {
-				const RAS_MeshObject::Layer& layer = *it;
-				bool found = false;
-				if (attribs.layer[i].type == CD_MTFACE && layer.face && layer.name == attribname) {
-					found = true;
-				}
-				else if (attribs.layer[i].type == CD_MCOL && layer.color && layer.name == attribname) {
-					found = true;
-				}
-				if (found) {
-					attribLayers[attribs.layer[i].glindex] = layer.index;
-					break;
-				}
-			}
-		}
-	}
 
 	return attribLayers;
 }
 
 bool BL_BlenderShader::Ok() const
 {
-	return (m_gpuMat != nullptr);
+	return (m_gpuShader != nullptr);
 }
 
 void BL_BlenderShader::ReloadMaterial(KX_Scene *scene)
 {
-	m_gpuMat = EEVEE_material_mesh_get(m_blenderScene, m_mat, false, false);
-
 	if (m_shGroup) {
 		DRW_shgroup_free(m_shGroup);
 	}
-	m_shGroup = DRW_shgroup_material_create(m_gpuMat, nullptr);
-	EEVEE_add_standard_uniforms_game(m_shGroup, scene->GetSceneLayerData(), EEVEE_engine_data_get());
+
+	if (m_mat) {
+		EEVEE_SceneLayerData *sldata = scene->GetSceneLayerData();
+		EEVEE_Data *edata = EEVEE_engine_data_get();
+		if (m_mat->use_nodes && m_mat->nodetree) {
+			GPUMaterial *mat = EEVEE_material_mesh_get(m_blenderScene, m_mat, false, false);
+			m_shGroup = DRW_shgroup_material_create(mat, nullptr);
+			GPUPass *pass = GPU_material_get_pass(mat);
+			m_gpuShader = GPU_pass_shader(pass);
+		}
+		else {
+			bool use_ao = edata->stl->effects->use_ao;
+			bool use_bent_normals = edata->stl->effects->use_bent_normals;
+			m_shGroup = EEVEE_default_shading_group_get(sldata, edata, false, false, use_ao, use_bent_normals);
+			int options = VAR_MAT_MESH;
+
+			if (use_ao) options |= VAR_MAT_AO;
+			if (use_bent_normals) options |= VAR_MAT_BENT;
+
+			EEVEE_UtilData *udata = scene->GetUtilData();
+			m_gpuShader = udata->default_lit[options];
+
+			float *color_p = &m_mat->r;
+			float *metal_p = &m_mat->ray_mirror;
+			float *spec_p = &m_mat->spec;
+			float *rough_p = &m_mat->gloss_mir;
+
+			DRW_shgroup_uniform_vec3(m_shGroup, "basecol", color_p, 1);
+			DRW_shgroup_uniform_float(m_shGroup, "metallic", metal_p, 1);
+			DRW_shgroup_uniform_float(m_shGroup, "specular", spec_p, 1);
+			DRW_shgroup_uniform_float(m_shGroup, "roughness", rough_p, 1);
+		}
+		EEVEE_add_standard_uniforms_game(m_shGroup, sldata, edata);
+	}
+	else {
+		m_shGroup = nullptr;
+	}
 
 	ParseAttribs();
 }
 
 void BL_BlenderShader::SetProg(bool enable, double time, RAS_Rasterizer *rasty)
 {
-	if (Ok()) {
-		if (enable) {
-
-			DRW_draw_shgroup(m_shGroup, (DRWState)(
-				DRW_STATE_WRITE_DEPTH |
-				DRW_STATE_DEPTH_LESS |
-				// DRW_STATE_CULL_BACK |
-				DRW_STATE_WRITE_COLOR));
-		}
-		else {
-			GPU_material_unbind(m_gpuMat);
-		}
+	if (enable && m_shGroup) {
+		DRW_draw_shgroup(m_shGroup, (DRWState)(
+			DRW_STATE_WRITE_DEPTH |
+			DRW_STATE_DEPTH_LESS |
+			//DRW_STATE_CULL_BACK |
+			DRW_STATE_WRITE_COLOR));
+	}
+	else {
+		//GPU_material_unbind(m_gpuMat);
 	}
 }
 
 void BL_BlenderShader::ParseAttribs()
 {
-	if (!Ok()) {
-		return;
-	}
-
-	GPUVertexAttribs attribs;
-	GPU_material_vertex_attributes(m_gpuMat, &attribs);
-
-	m_attribs.clear();
-
-	for (unsigned short i = 0; i < attribs.totlayer; ++i) {
-		const int type = attribs.layer[i].type;
-		const int glindex = attribs.layer[i].glindex;
-		if (type == CD_MTFACE) {
-			m_attribs.emplace_back(glindex, RAS_Rasterizer::RAS_TEXCO_UV);
-		}
-		else if (type == CD_TANGENT) {
-			m_attribs.emplace_back(glindex, RAS_Rasterizer::RAS_TEXTANGENT);
-		}
-		else if (type == CD_ORCO) {
-			m_attribs.emplace_back(glindex, RAS_Rasterizer::RAS_TEXCO_ORCO);
-		}
-		else if (type == CD_NORMAL) {
-			m_attribs.emplace_back(glindex, RAS_Rasterizer::RAS_TEXCO_NORM);
-		}
-		else if (type == CD_MCOL) {
-			m_attribs.emplace_back(glindex, RAS_Rasterizer::RAS_TEXCO_VCOL);
-		}
-	}
 }
 
 void BL_BlenderShader::SetAttribs(RAS_Rasterizer *ras)
 {
-	if (!Ok()) {
-		return;
-	}
-
-	ras->ClearTexCoords();
-	ras->SetAttribs(m_attribs);
 }
 
 void BL_BlenderShader::Update(RAS_MeshSlot *ms, RAS_Rasterizer *rasty)
 {
-	ms->SetGpuMat(m_gpuMat);
+	ms->SetGpuShader(m_gpuShader);
 
-	float *obcol = (float *)ms->m_meshUser->GetColor().getValue();
+	//float *obcol = (float *)ms->m_meshUser->GetColor().getValue();
 
 	DRW_draw_geometry_prepare(m_shGroup, (float(*)[4])ms->m_meshUser->GetMatrix(), nullptr, nullptr);
 
-	m_alphaBlend = GPU_material_alpha_blend(m_gpuMat, obcol);
+	m_alphaBlend = GPU_BLEND_SOLID;
 }
 
 bool BL_BlenderShader::UseInstancing() const
@@ -212,16 +163,16 @@ bool BL_BlenderShader::UseInstancing() const
 
 void BL_BlenderShader::ActivateInstancing(void *matrixoffset, void *positionoffset, void *coloroffset, unsigned int stride)
 {
-	if (Ok()) {
+	/*if (Ok()) {
 		GPU_material_bind_instancing_attrib(m_gpuMat, matrixoffset, positionoffset, coloroffset, stride);
-	}
+	}*/
 }
 
 void BL_BlenderShader::DesactivateInstancing()
 {
-	if (Ok()) {
+	/*if (Ok()) {
 		GPU_material_unbind_instancing_attrib(m_gpuMat);
-	}
+	}*/
 }
 
 int BL_BlenderShader::GetAlphaBlend()

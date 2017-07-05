@@ -157,10 +157,7 @@ KX_Scene::KX_Scene(SCA_IInputDevice *inputDevice,
 	m_suspendeddelta(0.0),
 	m_blenderScene(scene),
 	m_isActivedHysteresis(false),
-	m_lodHysteresisValue(0),
-	m_irradianceTexBound(false),
-	m_probeTexBound(false),
-	m_utilTexBound(false)
+	m_lodHysteresisValue(0)
 {
 
 	m_dbvt_culling = false;
@@ -315,10 +312,16 @@ void KX_Scene::SetSceneLayerData(EEVEE_SceneLayerData *data)
 
 void KX_Scene::SetEeveeUtilData(EEVEE_UtilData *data)
 {
-	m_edata = data;
+	m_udata = data;
 }
 
 // EEVEE DATA GET
+
+// utildata
+EEVEE_UtilData *KX_Scene::GetUtilData()
+{
+	return m_udata;
+}
 
 // sldata
 EEVEE_SceneLayerData *KX_Scene::GetSceneLayerData()
@@ -337,50 +340,6 @@ EEVEE_Light *KX_Scene::GetEeveeLightsData()
 	return m_lightsData;
 }
 
-// utilTex
-GPUTexture *KX_Scene::GetUtilTex()
-{
-	if (!m_utilTexBound) {
-		GPU_texture_bind(m_edata->util_tex, 7);
-		m_utilTexBound = true;
-	}
-	return m_edata->util_tex;
-}
-
-// Probes (only world Probe for now)
-GPUTexture *KX_Scene::GetProbeTex()
-{
-	if (!m_probeTexBound) {
-		GPU_texture_bind(m_sldata->probe_pool, 6);
-		m_probeTexBound = true;
-	}
-	return m_sldata->probe_pool;
-}
-
-int KX_Scene::GetProbeCount() // 1 = world default probe
-{
-	return m_sldata->probes->num_render_cube;
-}
-
-float KX_Scene::GetProbeLodMax()
-{
-	return m_sldata->probes->lodmax;
-}
-
-// Irradiance grid
-GPUTexture *KX_Scene::GetIrradianceTex()
-{
-	if (!m_irradianceTexBound) {
-		GPU_texture_bind(m_sldata->irradiance_pool, 5);
-		m_irradianceTexBound = true;
-	}
-	return m_sldata->irradiance_pool;
-}
-
-int KX_Scene::GetIrradianceCount()
-{
-	return m_sldata->probes->num_render_grid;
-}
 std::string KX_Scene::GetName()
 {
 	return m_sceneName;

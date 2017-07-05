@@ -73,7 +73,7 @@ RAS_MeshSlot::RAS_MeshSlot()
 	m_pDerivedMesh(nullptr),
 	m_meshUser(nullptr),
 	m_batchPartIndex(-1),
-	m_gpuMat(nullptr)
+	m_gpuShader(nullptr)
 {
 }
 
@@ -95,7 +95,7 @@ RAS_MeshSlot::RAS_MeshSlot(const RAS_MeshSlot& slot)
 	m_pDerivedMesh(nullptr),
 	m_meshUser(nullptr),
 	m_batchPartIndex(-1),
-	m_gpuMat(nullptr)
+	m_gpuShader(nullptr)
 {
 	if (m_displayArrayBucket) {
 		m_displayArrayBucket->AddRef();
@@ -166,14 +166,14 @@ void RAS_MeshSlot::SetDisplayArrayBucket(RAS_DisplayArrayBucket *arrayBucket)
 	m_displayArray = m_displayArrayBucket->GetDisplayArray();
 }
 
-void RAS_MeshSlot::SetGpuMat(GPUMaterial *mat)
+void RAS_MeshSlot::SetGpuShader(GPUShader *shader)
 {
-	m_gpuMat = mat;
+	m_gpuShader = shader;
 }
 
-GPUMaterial *RAS_MeshSlot::GetGpuMat()
+GPUShader *RAS_MeshSlot::GetGpuShader()
 {
-	return m_gpuMat;
+	return m_gpuShader;
 }
 
 void RAS_MeshSlot::GenerateTree(RAS_DisplayArrayUpwardNode& root, RAS_UpwardTreeLeafs& leafs)
@@ -233,27 +233,25 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 		* (m_drawingmode != 0) is used to avoid crash when we press
 		* P while we are in wireframe viewport shading mode.
 		*/
-		GPUMaterial *gpumat = GetGpuMat();
-		if (gpumat && ((rasty->GetDrawingMode() != RAS_Rasterizer::RAS_SHADOW) && (rasty->GetDrawingMode() != RAS_Rasterizer::RAS_WIREFRAME))) {
-			GPUPass *pass = GPU_material_get_pass(gpumat);
-			GPUShader *shader = GPU_pass_shader(pass);
-			GPU_shader_bind(shader);
+		if (((rasty->GetDrawingMode() != RAS_Rasterizer::RAS_SHADOW) && (rasty->GetDrawingMode() != RAS_Rasterizer::RAS_WIREFRAME))) {
 
-			rasty->ProcessLighting(materialData->m_useLighting, managerData->m_trans, shader);
+			GPU_shader_bind(m_gpuShader);
+
+			rasty->ProcessLighting(materialData->m_useLighting, managerData->m_trans, m_gpuShader);
 
 			KX_Scene *scene = KX_GetActiveScene();
 			KX_Camera *cam = scene->GetActiveCamera();
 
 			// lit surface frag uniforms
-			int projloc = GPU_shader_get_uniform(shader, "ProjectionMatrix");
-			int viewinvloc = GPU_shader_get_uniform(shader, "ViewMatrixInverse");
-			int viewloc = GPU_shader_get_uniform(shader, "ViewMatrix");
+			int projloc = GPU_shader_get_uniform(m_gpuShader, "ProjectionMatrix");
+			int viewinvloc = GPU_shader_get_uniform(m_gpuShader, "ViewMatrixInverse");
+			int viewloc = GPU_shader_get_uniform(m_gpuShader, "ViewMatrix");
 			// lit surface vert uniforms
-			int modelviewprojloc = GPU_shader_get_uniform(shader, "ModelViewProjectionMatrix");
-			int modelloc = GPU_shader_get_uniform(shader, "ModelMatrix");
-			int modelviewloc = GPU_shader_get_uniform(shader, "ModelViewMatrix");
-			int worldnormloc = GPU_shader_get_uniform(shader, "WorldNormalMatrix");
-			int normloc = GPU_shader_get_uniform(shader, "NormalMatrix");
+			int modelviewprojloc = GPU_shader_get_uniform(m_gpuShader, "ModelViewProjectionMatrix");
+			int modelloc = GPU_shader_get_uniform(m_gpuShader, "ModelMatrix");
+			int modelviewloc = GPU_shader_get_uniform(m_gpuShader, "ModelViewMatrix");
+			int worldnormloc = GPU_shader_get_uniform(m_gpuShader, "WorldNormalMatrix");
+			int normloc = GPU_shader_get_uniform(m_gpuShader, "NormalMatrix");
 
 			MT_Matrix4x4 proj(cam->GetProjectionMatrix());
 			MT_Matrix4x4 view(rasty->GetViewMatrix());
@@ -290,14 +288,14 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 			}
 
 			// MATRICES
-			GPU_shader_uniform_vector(shader, projloc, 16, 1, (float *)projf);
-			GPU_shader_uniform_vector(shader, viewloc, 16, 1, (float *)viewf);
-			GPU_shader_uniform_vector(shader, viewinvloc, 16, 1, (float *)viewinvf);
-			GPU_shader_uniform_vector(shader, modelviewprojloc, 16, 1, (float *)modelviewprojf);
-			GPU_shader_uniform_vector(shader, modelloc, 16, 1, (float *)modelf);
-			GPU_shader_uniform_vector(shader, modelviewloc, 16, 1, (float *)modelviewf);
-			GPU_shader_uniform_vector(shader, worldnormloc, 9, 1, (float *)worldnormf);
-			GPU_shader_uniform_vector(shader, normloc, 16, 9, (float *)normf);
+			GPU_shader_uniform_vector(m_gpuShader, projloc, 16, 1, (float *)projf);
+			GPU_shader_uniform_vector(m_gpuShader, viewloc, 16, 1, (float *)viewf);
+			GPU_shader_uniform_vector(m_gpuShader, viewinvloc, 16, 1, (float *)viewinvf);
+			GPU_shader_uniform_vector(m_gpuShader, modelviewprojloc, 16, 1, (float *)modelviewprojf);
+			GPU_shader_uniform_vector(m_gpuShader, modelloc, 16, 1, (float *)modelf);
+			GPU_shader_uniform_vector(m_gpuShader, modelviewloc, 16, 1, (float *)modelviewf);
+			GPU_shader_uniform_vector(m_gpuShader, worldnormloc, 9, 1, (float *)worldnormf);
+			GPU_shader_uniform_vector(m_gpuShader, normloc, 16, 9, (float *)normf);
 		}
 		rasty->IndexPrimitives(displayArrayData->m_storageInfo);
 	}
