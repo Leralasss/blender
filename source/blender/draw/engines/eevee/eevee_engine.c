@@ -238,25 +238,12 @@ RenderEngineType DRW_engine_viewport_eevee_type = {
 
 #define GAME_ENGINE "BLENDER_GAME"
 
-DrawEngineType draw_engine_game_type = {
-	NULL, NULL,
-	N_("Game Engine"),
-	&EEVEE_data_size,
-	&EEVEE_engine_init,
-	&EEVEE_engine_free,
-	&EEVEE_cache_init,
-	&EEVEE_cache_populate,
-	&EEVEE_cache_finish,
-	&EEVEE_draw_scene,
-	NULL//&EEVEE_draw_scene
-};
-
 RenderEngineType DRW_engine_viewport_game_type = {
 	NULL, NULL,
 	GAME_ENGINE, N_("Game Engine"), RE_INTERNAL | RE_USE_SHADING_NODES,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL,
-	&draw_engine_game_type,
+	&draw_engine_eevee_type,
 	{ NULL, NULL, NULL }
 };
 

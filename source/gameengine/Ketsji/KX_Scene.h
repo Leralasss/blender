@@ -339,6 +339,8 @@ public:
 	bool m_probeTexBound;
 
 	// EEVEE GET DATA
+	// sldata
+	EEVEE_SceneLayerData *GetSceneLayerData();
 	// utilTex
 	GPUTexture *GetUtilTex();
 	// lights

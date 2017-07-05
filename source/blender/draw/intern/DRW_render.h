@@ -272,6 +272,13 @@ DRWShadingGroup *DRW_shgroup_point_batch_create(struct GPUShader *shader, DRWPas
 DRWShadingGroup *DRW_shgroup_line_batch_create(struct GPUShader *shader, DRWPass *pass);
 DRWShadingGroup *DRW_shgroup_empty_tri_batch_create(struct GPUShader *shader, DRWPass *pass, int size);
 
+// needed for bge
+void DRW_draw_geometry_prepare(
+	DRWShadingGroup *shgroup, const float(*obmat)[4], const float *texcoloc, const float *texcosize);
+void DRW_draw_shgroup(DRWShadingGroup *shgroup, DRWState pass_state);
+void *DRW_viewport_engine_data_get(void *engine_type);
+// endof needed for bge
+
 typedef void (DRWCallGenerateFn)(
         DRWShadingGroup *shgroup,
         void (*draw_fn)(DRWShadingGroup *shgroup, struct Gwn_Batch *geom),

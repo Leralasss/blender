@@ -320,6 +320,12 @@ void KX_Scene::SetEeveeUtilData(EEVEE_UtilData *data)
 
 // EEVEE DATA GET
 
+// sldata
+EEVEE_SceneLayerData *KX_Scene::GetSceneLayerData()
+{
+	return m_sldata;
+}
+
 // lights
 GPUUniformBuffer *KX_Scene::GetLightsUbo()
 {

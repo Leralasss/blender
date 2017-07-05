@@ -223,6 +223,12 @@ void KX_BlenderConverter::ConvertScene(KX_Scene *destinationscene, RAS_Rasterize
 
 	KX_BlenderSceneConverter sceneConverter;
 
+	// EEVEE Set Scene Layer Data and other data
+	EEVEE_SceneLayerData *sldata = EEVEE_scene_layer_data_get();
+	destinationscene->SetSceneLayerData(sldata);
+	EEVEE_UtilData *data = EEVEE_util_data_get();
+	destinationscene->SetEeveeUtilData(data);
+
 	BL_ConvertBlenderObjects(
 		m_maggie,
 		m_depsgraph,
@@ -234,12 +240,6 @@ void KX_BlenderConverter::ConvertScene(KX_Scene *destinationscene, RAS_Rasterize
 		sceneConverter,
 		m_alwaysUseExpandFraming,
 		libloading);
-
-	// EEVEE Set Scene Layer Data and other data
-	EEVEE_SceneLayerData *sldata = EEVEE_scene_layer_data_get();
-	destinationscene->SetSceneLayerData(sldata);
-	EEVEE_UtilData *data = EEVEE_util_data_get();
-	destinationscene->SetEeveeUtilData(data);
 
 	m_sceneSlots.emplace(destinationscene, sceneConverter);
 }

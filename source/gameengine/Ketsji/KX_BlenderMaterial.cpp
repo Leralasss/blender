@@ -160,7 +160,7 @@ SCA_IScene *KX_BlenderMaterial::GetScene() const
 void KX_BlenderMaterial::ReleaseMaterial()
 {
 	if (m_blenderShader)
-		m_blenderShader->ReloadMaterial();
+		m_blenderShader->ReloadMaterial(m_scene);
 }
 
 void KX_BlenderMaterial::InitTextures()

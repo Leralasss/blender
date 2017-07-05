@@ -424,6 +424,7 @@ EEVEE_SceneLayerData *EEVEE_scene_layer_data_get(void);
 EEVEE_ObjectEngineData *EEVEE_object_data_get(Object *ob);
 EEVEE_LightProbeEngineData *EEVEE_lightprobe_data_get(Object *ob);
 EEVEE_LampEngineData *EEVEE_lamp_data_get(Object *ob);
+EEVEE_Data *EEVEE_engine_data_get(void);
 
 /* eevee_materials.c */
 void EEVEE_materials_init(void);
@@ -437,6 +438,7 @@ struct GPUMaterial *EEVEE_material_mesh_get(struct Scene *scene, Material *ma, b
 struct GPUMaterial *EEVEE_material_hair_get(struct Scene *scene, Material *ma, bool use_ao, bool use_bent_normals);
 void EEVEE_materials_free(void);
 void EEVEE_draw_default_passes(EEVEE_PassList *psl);
+void EEVEE_add_standard_uniforms_game(struct DRWShadingGroup *shgrp, EEVEE_SceneLayerData *sldata, EEVEE_Data *vedata);
 
 /* eevee_lights.c */
 void EEVEE_lights_init(EEVEE_SceneLayerData *sldata);

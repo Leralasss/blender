@@ -704,7 +704,9 @@ DRWShadingGroup *DRW_shgroup_create(struct GPUShader *shader, DRWPass *pass)
 	shgroup->batch_geom = NULL;
 	shgroup->instance_geom = NULL;
 
-	BLI_addtail(&pass->shgroups, shgroup);
+	if (pass) { // bge doesn't need pass
+		BLI_addtail(&pass->shgroups, shgroup);
+	}
 	BLI_listbase_clear(&shgroup->calls);
 
 #ifdef USE_GPU_SELECT
@@ -1528,7 +1530,7 @@ typedef struct DRWBoundTexture {
 	GPUTexture *tex;
 } DRWBoundTexture;
 
-static void draw_geometry_prepare(
+void DRW_draw_geometry_prepare(
         DRWShadingGroup *shgroup, const float (*obmat)[4], const float *texcoloc, const float *texcosize)
 {
 	RegionView3D *rv3d = DST.draw_ctx.rv3d;
@@ -1669,12 +1671,12 @@ static void draw_geometry(DRWShadingGroup *shgroup, Gwn_Batch *geom, const float
 		}
 	}
 
-	draw_geometry_prepare(shgroup, obmat, texcoloc, texcosize);
+	DRW_draw_geometry_prepare(shgroup, obmat, texcoloc, texcosize);
 
 	draw_geometry_execute(shgroup, geom);
 }
 
-static void draw_shgroup(DRWShadingGroup *shgroup, DRWState pass_state)
+void DRW_draw_shgroup(DRWShadingGroup *shgroup, DRWState pass_state)
 {
 	BLI_assert(shgroup->shader);
 	BLI_assert(shgroup->interface);
@@ -1810,7 +1812,7 @@ static void draw_shgroup(DRWShadingGroup *shgroup, DRWState pass_state)
 			else {
 				BLI_assert(call->head.type == DRW_CALL_GENERATE);
 				DRWCallGenerate *callgen = ((DRWCallGenerate *)call);
-				draw_geometry_prepare(shgroup, callgen->obmat, NULL, NULL);
+				DRW_draw_geometry_prepare(shgroup, callgen->obmat, NULL, NULL);
 				callgen->geometry_fn(shgroup, draw_geometry_execute, callgen->user_data);
 			}
 
@@ -1858,7 +1860,7 @@ void DRW_draw_pass(DRWPass *pass)
 	}
 
 	for (DRWShadingGroup *shgroup = pass->shgroups.first; shgroup; shgroup = shgroup->next) {
-		draw_shgroup(shgroup, pass->state);
+		DRW_draw_shgroup(shgroup, pass->state);
 	}
 
 	/* Clear Bound textures */
@@ -2209,7 +2211,7 @@ void DRW_transform_to_display(GPUTexture *tex)
 /** \name Viewport (DRW_viewport)
  * \{ */
 
-static void *DRW_viewport_engine_data_get(void *engine_type)
+void *DRW_viewport_engine_data_get(void *engine_type)
 {
 	void *data = GPU_viewport_engine_data_get(DST.viewport, engine_type);
 
@@ -3188,7 +3190,7 @@ void DRW_draw_select_loop(
 
 #ifdef DEBUG
 	/* Avoid accidental reuse. */
-	memset(&DST, 0xFF, sizeof(DST));
+	//memset(&DST, 0xFF, sizeof(DST));
 #endif
 
 	/* Cleanup for selection state */
@@ -3276,7 +3278,7 @@ void DRW_draw_depth_loop(
 
 #ifdef DEBUG
 	/* Avoid accidental reuse. */
-	memset(&DST, 0xFF, sizeof(DST));
+	//memset(&DST, 0xFF, sizeof(DST));
 #endif
 
 	/* Cleanup for selection state */

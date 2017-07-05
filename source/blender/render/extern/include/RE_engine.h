@@ -114,7 +114,7 @@ typedef struct RenderEngineType {
 } RenderEngineType;
 
 typedef struct RenderEngine {
-	RenderEngineType *type;
+	struct RenderEngineType *type;
 	void *py_instance;
 
 	int flag;
@@ -142,8 +142,8 @@ typedef struct RenderEngine {
 	int last_winx, last_winy;
 } RenderEngine;
 
-RenderEngine *RE_engine_create(RenderEngineType *type);
-RenderEngine *RE_engine_create_ex(RenderEngineType *type, bool use_for_viewport);
+RenderEngine *RE_engine_create(struct RenderEngineType *type);
+RenderEngine *RE_engine_create_ex(struct RenderEngineType *type, bool use_for_viewport);
 void RE_engine_free(RenderEngine *engine);
 
 void RE_layer_load_from_file(struct RenderLayer *layer, struct ReportList *reports, const char *filename, int x, int y);
@@ -180,9 +180,9 @@ void RE_engine_register_pass(struct RenderEngine *engine, struct Scene *scene, s
 
 void RE_engines_init(void);
 void RE_engines_exit(void);
-void RE_engines_register(struct Main *bmain, RenderEngineType *render_type);
+void RE_engines_register(struct Main *bmain, struct RenderEngineType *render_type);
 
-RenderEngineType *RE_engines_find(const char *idname);
+struct RenderEngineType *RE_engines_find(const char *idname);
 
 rcti* RE_engine_get_current_tiles(struct Render *re, int *r_total_tiles, bool *r_needs_free);
 struct RenderData *RE_engine_get_render_data(struct Render *re);
