@@ -43,6 +43,8 @@ void KX_WorldInfo_Mathutils_Callback_Init(void);
 
 struct Scene;
 struct World;
+struct DRWShadingGroup;
+struct GPUShader;
 
 class KX_WorldInfo : public PyObjectPlus
 {
@@ -69,6 +71,10 @@ class KX_WorldInfo : public PyObjectPlus
 	MT_Vector3 m_con_mistcolor;
 	MT_Vector3 m_con_ambientcolor;
 	World *m_blenderWorld;
+
+	// EEVEE
+	GPUShader *m_backgroundShader;
+	DRWShadingGroup *m_backgroundShGroup;
 
 public:
 	/**

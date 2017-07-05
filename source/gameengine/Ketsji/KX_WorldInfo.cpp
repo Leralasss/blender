@@ -33,7 +33,7 @@
 #include "KX_WorldInfo.h"
 #include "KX_PyMath.h"
 #include "RAS_Rasterizer.h"
-#include "GPU_material.h"
+#include "GPU_shader.h"
 
 /* This little block needed for linking to Blender... */
 #ifdef WIN32
@@ -48,6 +48,13 @@
 
 #include "BKE_global.h"
 #include "BKE_scene.h"
+
+extern "C" {
+#  include "eevee_engine.h"
+#  include "DRW_engine.h"
+#  include "DRW_render.h"
+#  include "../blender/gpu/intern/gpu_codegen.h"
+}
 /* end of blender include block */
 
 KX_WorldInfo::KX_WorldInfo(Scene *blenderscene, World *blenderworld)
@@ -78,6 +85,20 @@ KX_WorldInfo::KX_WorldInfo(Scene *blenderscene, World *blenderworld)
 		setAmbientColor(MT_Vector3(blenderworld->ambr, blenderworld->ambg, blenderworld->ambb));
 		setExposure(blenderworld->exp);
 		setRange(blenderworld->range);
+
+		if (blenderworld->use_nodes && blenderworld->nodetree) {
+			EEVEE_SceneLayerData *sldata = EEVEE_scene_layer_data_get();
+			EEVEE_Data *edata = EEVEE_engine_data_get();
+			GPUMaterial *mat = EEVEE_material_world_background_get(blenderscene, blenderworld);
+			m_backgroundShGroup = DRW_shgroup_material_create(mat, nullptr);
+			GPUPass *pass = GPU_material_get_pass(mat);
+			m_backgroundShader = GPU_pass_shader(pass); // Will be used to set uniforms in realtime
+			DRW_shgroup_uniform_float(m_backgroundShGroup, "backgroundAlpha", &edata->stl->g_data->background_alpha, 1);
+		}
+		else {
+			m_backgroundShGroup = nullptr;
+			m_backgroundShader = nullptr;
+		}
 	}
 	else {
 		m_hasworld = false;
@@ -208,25 +229,14 @@ void KX_WorldInfo::RenderBackground(RAS_Rasterizer *rasty)
 {
 	if (m_hasworld) {
 		if (m_blenderWorld->use_nodes && m_blenderWorld->nodetree) {
-			GPUMaterial *gpumat = GPU_material_world(m_scene, m_scene->world);
-			float viewmat[4][4];
-			rasty->GetViewMatrix().getValue(&viewmat[0][0]);
-			float invviewmat[4][4];
-			rasty->GetViewInvMatrix().getValue(&invviewmat[0][0]);
 
-			static float texcofac[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-			GPU_material_bind(gpumat, 0xFFFFFFFF, m_scene->lay, 1.0f, false, viewmat, invviewmat, texcofac, false);
-
-			rasty->Disable(RAS_Rasterizer::RAS_CULL_FACE);
-			rasty->Enable(RAS_Rasterizer::RAS_DEPTH_TEST);
-			rasty->SetDepthFunc(RAS_Rasterizer::RAS_ALWAYS);
+			DRW_draw_shgroup(m_backgroundShGroup, (DRWState)(
+				DRW_STATE_WRITE_DEPTH | DRW_STATE_WRITE_COLOR));
 
 			rasty->DrawOverlayPlane();
 
 			rasty->SetDepthFunc(RAS_Rasterizer::RAS_LEQUAL);
 			rasty->Enable(RAS_Rasterizer::RAS_CULL_FACE);
-
-			GPU_material_unbind(gpumat);
 		}
 		else {
 			float srgbcolor[4];
