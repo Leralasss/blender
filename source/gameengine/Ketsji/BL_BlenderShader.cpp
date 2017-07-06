@@ -90,7 +90,7 @@ void BL_BlenderShader::ReloadMaterial(KX_Scene *scene)
 
 	if (m_mat) {
 		EEVEE_SceneLayerData *sldata = scene->GetSceneLayerData();
-		EEVEE_Data *edata = EEVEE_engine_data_get();
+		EEVEE_Data *edata = scene->GetEeveeData();
 		if (m_mat->use_nodes && m_mat->nodetree) {
 			GPUMaterial *mat = EEVEE_material_mesh_get(m_blenderScene, m_mat, false, false);
 			m_shGroup = DRW_shgroup_material_create(mat, nullptr);

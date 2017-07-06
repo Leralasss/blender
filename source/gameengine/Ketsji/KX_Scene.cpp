@@ -209,7 +209,7 @@ KX_Scene::KX_Scene(SCA_IInputDevice *inputDevice,
 		m_obstacleSimulation = nullptr;
 	}
 
-	m_animationPool = BLI_task_pool_create(KX_GetActiveEngine()->GetTaskScheduler(), &m_animationPoolData);	
+	m_animationPool = BLI_task_pool_create(KX_GetActiveEngine()->GetTaskScheduler(), &m_animationPoolData);
 
 #ifdef WITH_PYTHON
 	m_attr_dict = nullptr;
@@ -303,14 +303,19 @@ KX_Scene::~KX_Scene()
 }
 
 // EEVEE DATA SET
-void KX_Scene::SetSceneLayerData(EEVEE_SceneLayerData *data)
+void KX_Scene::SetSceneLayerData(const EEVEE_SceneLayerData& data)
 {
 	m_sldata = data;
 }
 
-void KX_Scene::SetEeveeUtilData(EEVEE_UtilData *data)
+void KX_Scene::SetEeveeUtilData(const EEVEE_UtilData& data)
 {
 	m_udata = data;
+}
+
+void KX_Scene::SetEeveeData(const EEVEE_Data& data)
+{
+	m_edata = data;
 }
 
 // EEVEE DATA GET
@@ -318,19 +323,25 @@ void KX_Scene::SetEeveeUtilData(EEVEE_UtilData *data)
 // utildata
 EEVEE_UtilData *KX_Scene::GetUtilData()
 {
-	return m_udata;
+	return &m_udata;
+}
+
+// eevee data
+EEVEE_Data *KX_Scene::GetEeveeData()
+{
+	return &m_edata;
 }
 
 // sldata
 EEVEE_SceneLayerData *KX_Scene::GetSceneLayerData()
 {
-	return m_sldata;
+	return &m_sldata;
 }
 
 // lights
 GPUUniformBuffer *KX_Scene::GetLightsUbo()
 {
-	return m_sldata->light_ubo;
+	return m_sldata.light_ubo;
 }
 
 EEVEE_Light *KX_Scene::GetEeveeLightsData()
