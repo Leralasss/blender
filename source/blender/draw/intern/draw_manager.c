@@ -1403,7 +1403,7 @@ static void DRW_state_set(DRWState state)
 	{
 		int test;
 		if (CHANGED_ANY_STORE_VAR(
-		        DRW_STATE_BLEND | DRW_STATE_ADDITIVE | DRW_STATE_MULTIPLY,
+		        DRW_STATE_BLEND | DRW_STATE_ADDITIVE | DRW_STATE_MULTIPLY | DRW_STATE_TRANSMISSION,
 		        test))
 		{
 			if (test) {
@@ -1414,6 +1414,9 @@ static void DRW_state_set(DRWState state)
 				}
 				else if ((state & DRW_STATE_MULTIPLY) != 0) {
 					glBlendFunc(GL_DST_COLOR, GL_ZERO);
+				}
+				else if ((state & DRW_STATE_TRANSMISSION) != 0) {
+					glBlendFunc(GL_ONE, GL_SRC_ALPHA);
 				}
 				else if ((state & DRW_STATE_ADDITIVE) != 0) {
 					glBlendFunc(GL_ONE, GL_ONE);
@@ -1827,7 +1830,7 @@ void DRW_draw_shgroup(DRWShadingGroup *shgroup, DRWState pass_state)
 	DRW_state_reset();
 }
 
-void DRW_draw_pass(DRWPass *pass)
+static void DRW_draw_pass_ex(DRWPass *pass, DRWShadingGroup *start_group, DRWShadingGroup *end_group)
 {
 	/* Start fresh */
 	DST.shader = NULL;
@@ -1859,8 +1862,12 @@ void DRW_draw_pass(DRWPass *pass)
 		glBeginQuery(GL_TIME_ELAPSED, pass->timer_queries[pass->back_idx]);
 	}
 
-	for (DRWShadingGroup *shgroup = pass->shgroups.first; shgroup; shgroup = shgroup->next) {
+	for (DRWShadingGroup *shgroup = start_group; shgroup; shgroup = shgroup->next) {
 		DRW_draw_shgroup(shgroup, pass->state);
+		/* break if upper limit */
+		if (shgroup == end_group) {
+			break;
+		}
 	}
 
 	/* Clear Bound textures */
@@ -1880,6 +1887,17 @@ void DRW_draw_pass(DRWPass *pass)
 	}
 
 	pass->wasdrawn = true;
+}
+
+void DRW_draw_pass(DRWPass *pass)
+{
+	DRW_draw_pass_ex(pass, pass->shgroups.first, pass->shgroups.last);
+}
+
+/* Draw only a subset of shgroups. Used in special situations as grease pencil strokes */
+void DRW_draw_pass_subset(DRWPass *pass, DRWShadingGroup *start_group, DRWShadingGroup *end_group)
+{
+	DRW_draw_pass_ex(pass, start_group, end_group);
 }
 
 void DRW_draw_callbacks_pre_scene(void)
@@ -1907,6 +1925,9 @@ void DRW_state_reset_ex(DRWState state)
 
 void DRW_state_reset(void)
 {
+	/* Reset blending function */
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	DRW_state_reset_ex(DRW_STATE_DEFAULT);
 }
 
@@ -2736,14 +2757,12 @@ static void DRW_engines_enable_external(void)
 	use_drw_engine(DRW_engine_viewport_external_type.draw_engine);
 }
 
-static void DRW_engines_enable(const Scene *scene, SceneLayer *sl, const View3D *v3d)
+static void DRW_engines_enable(const Scene *scene, SceneLayer *sl)
 {
 	const int mode = CTX_data_mode_enum_ex(scene->obedit, OBACT_NEW);
 	DRW_engines_enable_from_engine(scene);
 
-	if ((DRW_state_is_scene_render() == false) &&
-	    (v3d->flag2 & V3D_RENDER_OVERRIDE) == 0)
-	{
+	if (DRW_state_draw_support()) {
 		DRW_engines_enable_from_object_mode();
 		DRW_engines_enable_from_mode(mode);
 	}
@@ -2962,9 +2981,6 @@ void DRW_draw_render_loop_ex(
 	DST.viewport = rv3d->viewport;
 	v3d->zbuf = true;
 
-	/* Get list of enabled engines */
-	DRW_engines_enable(scene, sl, v3d);
-
 	/* Setup viewport */
 	cache_is_dirty = GPU_viewport_cache_validate(DST.viewport, DRW_engines_get_hash());
 
@@ -2975,6 +2991,9 @@ void DRW_draw_render_loop_ex(
 	};
 
 	DRW_viewport_var_init();
+
+	/* Get list of enabled engines */
+	DRW_engines_enable(scene, sl);
 
 	/* Update ubos */
 	DRW_globals_update();
@@ -3022,6 +3041,7 @@ void DRW_draw_render_loop_ex(
 	if (DST.draw_ctx.evil_C) {
 		/* needed so manipulator isn't obscured */
 		glDisable(GL_DEPTH_TEST);
+
 		DRW_draw_manipulator();
 		glEnable(GL_DEPTH_TEST);
 
@@ -3351,6 +3371,18 @@ bool DRW_state_show_text(void)
 	return (DST.options.is_select) == 0 &&
 	       (DST.options.is_depth) == 0 &&
 	       (DST.options.is_scene_render) == 0;
+}
+
+/**
+ * Should draw support elements
+ * Objects center, selection outline, probe data, ...
+ */
+bool DRW_state_draw_support(void)
+{
+	View3D *v3d = DST.draw_ctx.v3d;
+	return (DRW_state_is_scene_render() == false) &&
+	        (v3d != NULL) &&
+	        ((v3d->flag2 & V3D_RENDER_OVERRIDE) == 0);
 }
 
 /** \} */

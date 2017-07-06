@@ -229,7 +229,7 @@ bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer,
 			* 80.0f; /* XXX : Empirical, Fit cycles power */
 	}
 	else if (la->type == LA_SPOT || la->type == LA_LOCAL) {
-		power = 1.0f / (4.0f * lightsData[slot].radius * lightsData[slot].radius * M_PI * M_PI) /* 1/(4*r²*Pi²) */
+		power = 1.0f / (4.0f * lightsData[slot].radius * lightsData[slot].radius * M_PI * M_PI) /* 1/(4*rï¿½*Piï¿½) */
 			* M_PI * M_PI * M_PI * 10.0; /* XXX : Empirical, Fit cycles power */
 
 		/* for point lights (a.k.a radius == 0.0) */

@@ -283,6 +283,10 @@ GPULamp *GPU_lamp_from_blender(Scene *scene, Object *ob, Object *par)
 				return lamp;
 			}
 
+			GPU_texture_bind(lamp->depthtex, 0);
+			GPU_texture_compare_mode(lamp->depthtex, true);
+			GPU_texture_unbind(lamp->depthtex);
+
 			if (!GPU_framebuffer_texture_attach(lamp->fb, lamp->depthtex, 0, 0)) {
 				gpu_lamp_shadow_free(lamp);
 				return lamp;
@@ -339,6 +343,10 @@ GPULamp *GPU_lamp_from_blender(Scene *scene, Object *ob, Object *par)
 				gpu_lamp_shadow_free(lamp);
 				return lamp;
 			}
+
+			GPU_texture_bind(lamp->tex, 0);
+			GPU_texture_compare_mode(lamp->tex, true);
+			GPU_texture_unbind(lamp->tex);
 
 			if (!GPU_framebuffer_texture_attach(lamp->fb, lamp->depthtex, 0, 0)) {
 				gpu_lamp_shadow_free(lamp);
