@@ -58,6 +58,7 @@
 extern "C" {
 #  include "BLF_api.h"
 #  include "GPU_uniformbuffer.h"
+#  include "DRW_render.h"
 }
 
 #include "MEM_guardedalloc.h"
@@ -282,6 +283,8 @@ void RAS_Rasterizer::SetAmbientColor(const MT_Vector3& color)
 
 void RAS_Rasterizer::Init()
 {
+	DRW_game_render_loop_begin();
+
 	GPU_state_init();
 
 	Disable(RAS_BLEND);
@@ -319,6 +322,8 @@ void RAS_Rasterizer::Exit()
 	ResetGlobalDepthTexture();
 
 	EndFrame();
+
+	DRW_game_render_loop_end();
 }
 
 void RAS_Rasterizer::BeginFrame(double time)

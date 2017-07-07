@@ -87,8 +87,7 @@ KX_WorldInfo::KX_WorldInfo(Scene *blenderscene, World *blenderworld)
 		setRange(blenderworld->range);
 
 		if (blenderworld->use_nodes && blenderworld->nodetree) {
-			EEVEE_SceneLayerData *sldata = EEVEE_scene_layer_data_get();
-			EEVEE_Data *edata = EEVEE_engine_data_get();
+			EEVEE_Data *edata = blenderscene->eevee_data;
 			GPUMaterial *mat = EEVEE_material_world_background_get(blenderscene, blenderworld);
 			m_backgroundShGroup = DRW_shgroup_material_create(mat, nullptr);
 			GPUPass *pass = GPU_material_get_pass(mat);

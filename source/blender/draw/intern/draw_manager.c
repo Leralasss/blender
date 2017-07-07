@@ -314,6 +314,8 @@ static struct DRWGlobalState {
 	ListBase enabled_engines; /* RenderEngineType */
 } DST = {NULL};
 
+static struct DRWGlobalState DSTCOPY = { NULL };
+
 static struct DRWMatrixOveride {
 	float mat[6][4][4];
 	bool override[6];
@@ -3058,7 +3060,8 @@ void DRW_draw_render_loop_ex(
 
 #ifdef DEBUG
 	/* Avoid accidental reuse. */
-	//memset(&DST, 0xFF, sizeof(DST));
+	memcpy(&DSTCOPY, &DST, sizeof(DST));
+	memset(&DST, 0xFF, sizeof(DST));
 #endif
 }
 
@@ -3210,7 +3213,8 @@ void DRW_draw_select_loop(
 
 #ifdef DEBUG
 	/* Avoid accidental reuse. */
-	//memset(&DST, 0xFF, sizeof(DST));
+	memcpy(&DSTCOPY, &DST, sizeof(DST));
+	memset(&DST, 0xFF, sizeof(DST));
 #endif
 
 	/* Cleanup for selection state */
@@ -3298,7 +3302,8 @@ void DRW_draw_depth_loop(
 
 #ifdef DEBUG
 	/* Avoid accidental reuse. */
-	//memset(&DST, 0xFF, sizeof(DST));
+	memcpy(&DSTCOPY, &DST, sizeof(DST));
+	memset(&DST, 0xFF, sizeof(DST));
 #endif
 
 	/* Cleanup for selection state */
@@ -3310,6 +3315,22 @@ void DRW_draw_depth_loop(
 }
 
 /** \} */
+
+void DRW_game_render_loop_begin()
+{
+#ifdef DEBUG
+	/* Reset before using it. */
+	memset(&DST, 0xFF, sizeof(DST));
+	memcpy(&DST, &DSTCOPY, sizeof(DSTCOPY));
+#endif
+}
+
+void DRW_game_render_loop_end(void)
+{
+	/* Avoid accidental reuse. */
+	memset(&DST, 0xFF, sizeof(DST));
+	memset(&DSTCOPY, 0xFF, sizeof(DSTCOPY));
+}
 
 
 /* -------------------------------------------------------------------- */
@@ -3499,6 +3520,8 @@ void DRW_engines_free(void)
 
 	if (globals_ramp)
 		GPU_texture_free(globals_ramp);
+
+	MEM_freeN(&DSTCOPY);
 
 #ifdef WITH_CLAY_ENGINE
 	BLI_remlink(&R_engines, &DRW_engine_viewport_clay_type);

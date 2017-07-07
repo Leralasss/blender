@@ -248,6 +248,11 @@ static void add_standard_uniforms(DRWShadingGroup *shgrp, EEVEE_SceneLayerData *
 		DRW_shgroup_uniform_buffer(shgrp, "minMaxDepthTex", &vedata->stl->g_data->minmaxz);
 		DRW_shgroup_uniform_vec3(shgrp, "aoParameters", &vedata->stl->effects->ao_dist, 1);
 	}
+	DRWContextState *ctx = DRW_context_state_get();
+	Scene *currentScene = ctx->scene;
+	currentScene->eevee_sldata = sldata;
+	currentScene->eevee_data = vedata;
+	currentScene->eevee_util_data = &e_data;
 }
 
 void EEVEE_add_standard_uniforms_game(DRWShadingGroup *shgrp, EEVEE_SceneLayerData *sldata, EEVEE_Data *vedata)
@@ -870,7 +875,3 @@ void EEVEE_draw_default_passes(EEVEE_PassList *psl)
 	}
 }
 
-EEVEE_UtilData *EEVEE_util_data_get()
-{
-	return &e_data;
-}

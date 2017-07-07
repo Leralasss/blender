@@ -350,6 +350,9 @@ struct DefaultTextureList     *DRW_viewport_texture_list_get(void);
 
 void DRW_viewport_request_redraw(void);
 
+void DRW_game_render_loop_begin();
+void DRW_game_render_loop_end();
+
 /* SceneLayers */
 void **DRW_scene_layer_engine_data_get(DrawEngineType *engine_type, void (*callback)(void *storage));
 
