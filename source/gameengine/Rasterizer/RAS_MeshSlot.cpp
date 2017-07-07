@@ -218,7 +218,7 @@ void RAS_MeshSlot::RunNode(const RAS_MeshSlotNodeTuple& tuple)
 		rasty->IndexPrimitivesDerivedMesh(this);
 	}
 	else {
-		if (((rasty->GetDrawingMode() != RAS_Rasterizer::RAS_SHADOW) && (rasty->GetDrawingMode() != RAS_Rasterizer::RAS_WIREFRAME))) {
+		if (m_gpuShader && rasty->GetDrawingMode() != RAS_Rasterizer::RAS_SHADOW && rasty->GetDrawingMode() != RAS_Rasterizer::RAS_WIREFRAME) {
 
 			GPU_shader_bind(m_gpuShader);
 

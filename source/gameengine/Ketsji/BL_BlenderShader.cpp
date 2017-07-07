@@ -95,7 +95,12 @@ void BL_BlenderShader::ReloadMaterial(KX_Scene *scene)
 			GPUMaterial *mat = EEVEE_material_mesh_get(m_blenderScene, m_mat, false, false);
 			m_shGroup = DRW_shgroup_material_create(mat, nullptr);
 			GPUPass *pass = GPU_material_get_pass(mat);
-			m_gpuShader = GPU_pass_shader(pass);
+			if (pass) {
+				m_gpuShader = GPU_pass_shader(pass);
+			}
+			else {
+				m_gpuShader = nullptr;
+			}
 		}
 		else {
 			bool use_ao = edata->stl->effects->use_ao;
@@ -119,7 +124,9 @@ void BL_BlenderShader::ReloadMaterial(KX_Scene *scene)
 			DRW_shgroup_uniform_float(m_shGroup, "specular", spec_p, 1);
 			DRW_shgroup_uniform_float(m_shGroup, "roughness", rough_p, 1);
 		}
-		EEVEE_add_standard_uniforms_game(m_shGroup, sldata, edata);
+		if (m_shGroup && m_gpuShader) {
+			EEVEE_add_standard_uniforms_game(m_shGroup, sldata, edata);
+		}
 	}
 	else {
 		m_shGroup = nullptr;
