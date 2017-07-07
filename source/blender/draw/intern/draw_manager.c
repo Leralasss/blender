@@ -3327,9 +3327,11 @@ void DRW_game_render_loop_begin()
 
 void DRW_game_render_loop_end(void)
 {
+#ifdef DEBUG
 	/* Avoid accidental reuse. */
 	memset(&DST, 0xFF, sizeof(DST));
 	memset(&DSTCOPY, 0xFF, sizeof(DSTCOPY));
+#endif
 }
 
 
@@ -3520,8 +3522,9 @@ void DRW_engines_free(void)
 
 	if (globals_ramp)
 		GPU_texture_free(globals_ramp);
-
+#ifdef DEBUG
 	MEM_freeN(&DSTCOPY);
+#endif
 
 #ifdef WITH_CLAY_ENGINE
 	BLI_remlink(&R_engines, &DRW_engine_viewport_clay_type);
