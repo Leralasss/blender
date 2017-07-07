@@ -62,16 +62,6 @@ RAS_OpenGLLight::RAS_OpenGLLight(RAS_Rasterizer *ras)
 
 RAS_OpenGLLight::~RAS_OpenGLLight()
 {
-	GPULamp *lamp;
-	KX_LightObject *kxlight = (KX_LightObject *)m_light;
-	Lamp *la = (Lamp *)kxlight->GetBlenderObject()->data;
-
-	if ((lamp = GetGPULamp())) {
-		float obmat[4][4] = {{0}};
-		GPU_lamp_update(lamp, 0, 0, obmat);
-		GPU_lamp_update_distance(lamp, la->dist, la->att1, la->att2, la->coeff_const, la->coeff_lin, la->coeff_quad);
-		GPU_lamp_update_spot(lamp, la->spotsize, la->spotblend);
-	}
 }
 
 bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer, int slot)
@@ -162,7 +152,6 @@ bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer,
 	//glLightfv((GLenum)(GL_LIGHT0 + slot), GL_SPECULAR, vec);
 	//glEnable((GLenum)(GL_LIGHT0 + slot));
 
-	GPULamp *lamp = GetGPULamp();
 	KX_LightObject *kxlight = (KX_LightObject *)m_light;
 	EEVEE_Light *lightsData = KX_GetActiveScene()->GetEeveeLightsData();
 	Lamp *la = (Lamp *)kxlight->GetBlenderObject()->data;
@@ -176,8 +165,6 @@ bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer,
 		for (int j = 0; j < 4; j++, dobmat++)
 			obmat[i][j] = (float)*dobmat;
 	int hide = kxlight->GetVisible() ? 0 : 1;
-	GPU_lamp_update(lamp, m_layer, hide, obmat);
-
 	
 	float mat[4][4], scale[3], power;
 
