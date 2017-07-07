@@ -34,8 +34,6 @@
 #include "RAS_Rasterizer.h"
 #include "RAS_ICanvas.h"
 
-#include "MT_CmMatrix4x4.h"
-
 #include "KX_Camera.h"
 #include "KX_Light.h"
 #include "KX_Scene.h"
@@ -156,15 +154,8 @@ bool RAS_OpenGLLight::ApplyFixedFunctionLighting(KX_Scene *kxscene, int oblayer,
 	EEVEE_Light *lightsData = KX_GetActiveScene()->GetEeveeLightsData();
 	Lamp *la = (Lamp *)kxlight->GetBlenderObject()->data;
 	float obmat[4][4];
-	// lights don't get their openGL matrix updated, do it now
-	if (kxlight->GetSGNode()->IsDirty())
-		kxlight->GetOpenGLMatrix();
-	float *dobmat = kxlight->GetOpenGLMatrixPtr()->getPointer();
-
-	for (int i = 0; i < 4; i++)
-		for (int j = 0; j < 4; j++, dobmat++)
-			obmat[i][j] = (float)*dobmat;
-	int hide = kxlight->GetVisible() ? 0 : 1;
+	const MT_Transform trans = kxlight->NodeGetWorldTransform();
+	trans.getValue(&obmat[0][0]);
 	
 	float mat[4][4], scale[3], power;
 

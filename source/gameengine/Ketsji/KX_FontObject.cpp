@@ -131,9 +131,7 @@ void KX_FontObject::AddMeshUser()
 {
 	m_meshUser = new RAS_TextUser(m_pClient_info);
 
-	// set the part of the mesh slot that never change
-	float *fl = GetOpenGLMatrixPtr()->getPointer();
-	m_meshUser->SetMatrix(fl);
+	NodeGetWorldTransform().getValue(m_meshUser->GetMatrix());
 	m_meshUser->SetBoundingBox(m_boundingBox);
 
 	RAS_BucketManager *bucketManager = GetScene()->GetBucketManager();
@@ -162,10 +160,9 @@ void KX_FontObject::AddMeshUser()
 void KX_FontObject::UpdateBuckets()
 {
 	// Update datas and add mesh slot to be rendered only if the object is not culled.
-	if (m_pSGNode->IsDirty()) {
-		GetOpenGLMatrix();
+	if (m_pSGNode->IsDirty(SG_Node::DIRTY_RENDER)) {
+		NodeGetWorldTransform().getValue(m_meshUser->GetMatrix());
 	}
-
 
 	// Font Objects don't use the glsl shader, this color management code is copied from gpu_shader_material.glsl
 	float color[4];
