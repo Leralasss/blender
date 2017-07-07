@@ -836,30 +836,35 @@ void KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
 	//m_rasterizer->SetAuxilaryClientInfo(scene);
 
 	//for (KX_LightObject *light : lightlist) {
-	//	RAS_ILightObject *raslight = light->GetLightData();
+	//	//RAS_ILightObject *raslight = light->GetLightData();
 
-	//	raslight->Update();
+	//	//raslight->Update();
 
-	//	if (light->GetVisible() && m_rasterizer->GetDrawingMode() == RAS_Rasterizer::RAS_TEXTURED &&
-	//		raslight->HasShadowBuffer() && raslight->NeedShadowUpdate())
+	//	//if (m_rasterizer->GetDrawingMode() == RAS_Rasterizer::RAS_TEXTURED &&
+	//		//raslight->HasShadowBuffer() && raslight->NeedShadowUpdate())
+	//	if (m_rasterizer->GetDrawingMode() == RAS_Rasterizer::RAS_TEXTURED)
 	//	{
 	//		/* make temporary camera */
 	//		RAS_CameraData camdata = RAS_CameraData();
 	//		KX_Camera *cam = new KX_Camera(scene, scene->m_callbacks, camdata, true, true);
 	//		cam->SetName("__shadow__cam__");
 
-	//		MT_Transform camtrans;
+	//		/* switch drawmode for speed */
+	//		RAS_Rasterizer::DrawType drawmode = m_rasterizer->GetDrawingMode();
+	//		m_rasterizer->SetDrawingMode(RAS_Rasterizer::RAS_SHADOW);
+
+	//		MT_Transform camtrans = light->NodeGetWorldTransform();
 
 	//		/* switch drawmode for speed */
 	//		RAS_Rasterizer::DrawType drawmode = m_rasterizer->GetDrawingMode();
 	//		m_rasterizer->SetDrawingMode(RAS_Rasterizer::RAS_SHADOW);
 
 	//		/* binds framebuffer object, sets up camera .. */
-	//		raslight->BindShadowBuffer(m_canvas, cam, camtrans);
+	//		//raslight->BindShadowBuffer(m_canvas, cam, camtrans); // REPLACE WITH EEVEE FBO OR CUSTOM OFFSCREEN
 
 	//		KX_CullingNodeList nodes;
 	//		/* update scene */
-	//		scene->CalculateVisibleMeshes(nodes, cam, raslight->GetShadowLayer());
+	//		scene->CalculateVisibleMeshes(nodes, cam/*, raslight->GetShadowLayer()*/);
 
 	//		m_logger.StartLog(tc_animations, m_kxsystem->GetTimeInSeconds());
 	//		UpdateAnimations(scene);
@@ -871,7 +876,7 @@ void KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
 	//		scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
 
 	//		/* unbind framebuffer object, restore drawmode, free camera */
-	//		raslight->UnbindShadowBuffer();
+	//		//raslight->UnbindShadowBuffer();
 	//		m_rasterizer->SetDrawingMode(drawmode);
 	//		cam->Release();
 	//	}

@@ -161,7 +161,7 @@ void RAS_BucketManager::Renderbuckets(const MT_Transform& cameratrans, RAS_Raste
 			m_nodeData.m_shaderOverride = true;
 			if (m_buckets[SOLID_SHADOW_BUCKET].size() > 0) {
 				rasty->SetOverrideShader(isVarianceShadow ?
-				                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE :
+				                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE : ////////////// REPLACE ALL WITH EEVEE SHADERS
 				                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_BLACK);
 			}
 			RenderBasicBuckets(rasty, SOLID_SHADOW_BUCKET);
