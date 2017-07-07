@@ -146,9 +146,9 @@ protected:
 	// EEVEE DATA
 	// lights
 	EEVEE_Light m_lightsData[128];
-	EEVEE_SceneLayerData m_sldata;
-	EEVEE_UtilData m_udata;
-	EEVEE_Data m_edata;
+	EEVEE_SceneLayerData *m_sldata;
+	EEVEE_UtilData *m_udata;
+	EEVEE_Data *m_edata;
 
 
 	KX_TextureRendererManager *m_rendererManager;
@@ -330,9 +330,9 @@ protected:
 public:
 
 	// EEVEE SET DATA
-	void SetSceneLayerData(const EEVEE_SceneLayerData& data);
-	void SetEeveeUtilData(const EEVEE_UtilData& data);
-	void SetEeveeData(const EEVEE_Data& data);
+	void SetSceneLayerData(EEVEE_SceneLayerData *data);
+	void SetEeveeUtilData(EEVEE_UtilData *data);
+	void SetEeveeData(EEVEE_Data *data);
 
 	// EEVEE GET DATA
 	// eevee data
