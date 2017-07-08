@@ -65,7 +65,7 @@ void save_screenshot_thread_func(TaskPool *__restrict pool, void *taskdata, int 
 
 RAS_ICanvas::RAS_ICanvas(RAS_Rasterizer *rasty)
 	:m_samples(0),
-	m_hdrType(RAS_Rasterizer::RAS_HDR_HALF_FLOAT)
+	m_hdrType(GPU_RGBA16F)
 {
 	m_taskscheduler = BLI_task_scheduler_create(TASK_SCHEDULER_AUTO_THREADS);
 	m_taskpool = BLI_task_pool_create(m_taskscheduler, nullptr);
@@ -96,12 +96,12 @@ int RAS_ICanvas::GetSamples() const
 	return m_samples;
 }
 
-void RAS_ICanvas::SetHdrType(RAS_Rasterizer::HdrType type)
+void RAS_ICanvas::SetHdrType(int hdrtype)
 {
-	m_hdrType = type;
+	m_hdrType = hdrtype;
 }
 
-RAS_Rasterizer::HdrType RAS_ICanvas::GetHdrType() const
+int RAS_ICanvas::GetHdrType() const
 {
 	return m_hdrType;
 }

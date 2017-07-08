@@ -32,7 +32,8 @@
 #ifndef __RAS_ICANVAS_H__
 #define __RAS_ICANVAS_H__
 
-#include "RAS_Rasterizer.h" // for RAS_Rasterizer::HdrType
+#include "RAS_Rasterizer.h"
+#include "../gpu/GPU_texture.h"
 
 class RAS_Rect;
 struct TaskScheduler;
@@ -83,8 +84,8 @@ public:
 	void SetSamples(int samples);
 	int GetSamples() const;
 
-	void SetHdrType(RAS_Rasterizer::HdrType type);
-	RAS_Rasterizer::HdrType GetHdrType() const;
+	void SetHdrType(int type);
+	int GetHdrType() const;
 
 	int GetWidth() const;
 	int GetHeight() const;
@@ -149,7 +150,7 @@ protected:
 	std::vector<Screenshot> m_screenshots;
 
 	int m_samples;
-	RAS_Rasterizer::HdrType m_hdrType;
+	int m_hdrType;
 
 	RAS_MouseState m_mousestate;
 	/// frame number for screenshots.

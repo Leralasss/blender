@@ -57,7 +57,7 @@ public:
 private:
 	const Flag m_flag;
 	const unsigned short m_colorSlots;
-	const RAS_Rasterizer::HdrType m_hdr;
+	int m_hdr;
 
 	unsigned int m_width;
 	unsigned int m_height;
@@ -72,7 +72,7 @@ private:
 	void MipmapTexture();
 
 public:
-	RAS_2DFilterOffScreen(unsigned short colorSlots, Flag flag, unsigned int width, unsigned int height, RAS_Rasterizer::HdrType hdr);
+	RAS_2DFilterOffScreen(unsigned short colorSlots, Flag flag, unsigned int width, unsigned int height, int hdr);
 	virtual ~RAS_2DFilterOffScreen();
 
 	/** Update the off screen to the new canvas dimensions if allowed.

@@ -241,12 +241,6 @@ public:
 		RAS_OFFSCREEN_MAX,
 	};
 
-	enum HdrType {
-		RAS_HDR_HALF_FLOAT = 0,
-		RAS_HDR_FULL_FLOAT,
-		RAS_HDR_MAX
-	};
-
 	/** Return the output frame buffer normally used for the input frame buffer
 	 * index in case of filters render.
 	 * \param index The input frame buffer, can be a non-filter frame buffer.
@@ -276,7 +270,7 @@ private:
 		unsigned int m_width;
 		unsigned int m_height;
 		int m_samples;
-		HdrType m_hdr;
+		int m_hdr;
 
 	public:
 		OffScreens();

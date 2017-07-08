@@ -28,8 +28,7 @@
 
 #include "EXP_ListWrapper.h"
 
-KX_2DFilterOffScreen::KX_2DFilterOffScreen(unsigned short colorSlots, Flag flag, unsigned int width, unsigned int height,
-										   RAS_Rasterizer::HdrType hdr)
+KX_2DFilterOffScreen::KX_2DFilterOffScreen(unsigned short colorSlots, Flag flag, unsigned int width, unsigned int height, int hdr)
 	:RAS_2DFilterOffScreen(colorSlots, flag, width, height, hdr)
 {
 }

@@ -30,8 +30,7 @@
 #include "GPU_framebuffer.h"
 #include "GPU_texture.h"
 
-RAS_2DFilterOffScreen::RAS_2DFilterOffScreen(unsigned short colorSlots, Flag flag, unsigned int width, unsigned int height,
-											 RAS_Rasterizer::HdrType hdr)
+RAS_2DFilterOffScreen::RAS_2DFilterOffScreen(unsigned short colorSlots, Flag flag, unsigned int width, unsigned int height, int hdr)
 	:m_flag(flag),
 	m_colorSlots(colorSlots),
 	m_hdr(hdr),
@@ -72,13 +71,7 @@ void RAS_2DFilterOffScreen::Construct()
 			GPU_texture_free(texture);
 		}
 
-		// WARNING: Always respect the order from RAS_Rasterizer::HdrType.
-		static const GPUTextureFormat dataTypeEnums[] = {
-			GPU_RGBA16F, // RAS_HDR_HALF_FLOAT
-			GPU_RGBA32F // RAS_HDR_FULL_FLOAT
-		};
-
-		texture = GPU_texture_create_2D_custom(m_width, m_height, 4, GPU_RGBA16F, 0, nullptr, nullptr);
+		texture = GPU_texture_create_2D_custom(m_width, m_height, 4, (GPUTextureFormat)m_hdr, 0, nullptr, nullptr);
 		if (!GPU_framebuffer_texture_attach(m_frameBuffer, texture, i, 0)) {
 			GPU_texture_free(texture);
 			texture = nullptr;

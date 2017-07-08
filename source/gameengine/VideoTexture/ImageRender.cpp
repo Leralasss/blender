@@ -93,7 +93,7 @@ ImageRender::ImageRender (KX_Scene *scene, KX_Camera * camera, unsigned int widt
 	m_canvas = m_engine->GetCanvas();
 
 	GPUTextureFormat type;
-	if (hdr == RAS_Rasterizer::RAS_HDR_FULL_FLOAT) {
+	if (hdr == GPU_RGBA32F) {
 		type = GPU_RGBA32F;
 		m_internalFormat = GL_RGBA32F_ARB;
 	}
@@ -478,7 +478,7 @@ static int ImageRender_init(PyObject *pySelf, PyObject *args, PyObject *kwds)
 	int width = canvas->GetWidth();
 	int height = canvas->GetHeight();
 	int samples = 0;
-	int hdr = 0;
+	int hdr = GPU_RGBA16F;
 	// parameter keywords
 	static const char *kwlist[] = {"sceneObj", "cameraObj", "width", "height", "samples", "hdr", nullptr};
 	// get parameters
@@ -742,7 +742,7 @@ static int ImageMirror_init(PyObject *pySelf, PyObject *args, PyObject *kwds)
 	int width = canvas->GetWidth();
 	int height = canvas->GetHeight();
 	int samples = 0;
-	int hdr = 0;
+	int hdr = GPU_RGBA16F;
 
 	// parameter keywords
 	static const char *kwlist[] = {"scene", "observer", "mirror", "material", "width", "height", "samples", "hdr", nullptr};
@@ -869,8 +869,7 @@ ImageRender::ImageRender (KX_Scene *scene, KX_GameObject *observer, KX_GameObjec
     m_clip(100.f)
 {
 	GPUTextureFormat type;
-	if (hdr == RAS_Rasterizer::RAS_HDR_FULL_FLOAT) {
-		type = GPU_RGBA32F;
+	if (hdr == GPU_RGBA32F) {
 		m_internalFormat = GL_RGBA32F_ARB;
 	}
 	else {

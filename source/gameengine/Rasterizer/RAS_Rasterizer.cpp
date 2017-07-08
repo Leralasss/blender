@@ -78,7 +78,7 @@ RAS_Rasterizer::OffScreens::OffScreens()
 	:m_width(0),
 	m_height(0),
 	m_samples(0),
-	m_hdr(RAS_HDR_HALF_FLOAT)
+	m_hdr(GPU_RGBA16F)
 {
 }
 
@@ -127,14 +127,7 @@ inline RAS_OffScreen *RAS_Rasterizer::OffScreens::GetOffScreen(OffScreenType typ
 				mode = (GPUOffScreenMode)(GPU_OFFSCREEN_RENDERBUFFER_COLOR | GPU_OFFSCREEN_RENDERBUFFER_DEPTH);
 			}
 
-			// WARNING: Always respect the order from RAS_Rasterizer::HdrType.
-			static const GPUTextureFormat dataTypeEnums[] = {
-				GPU_RGBA8, // RAS_HDR_NONE
-				GPU_RGBA16F, // RAS_HDR_HALF_FLOAT
-				GPU_RGBA32F // RAS_HDR_FULL_FLOAT
-			};
-
-			RAS_OffScreen *ofs = new RAS_OffScreen(m_width, m_height, sampleofs ? samples : 0, dataTypeEnums[m_hdr], mode, nullptr, type);
+			RAS_OffScreen *ofs = new RAS_OffScreen(m_width, m_height, sampleofs ? samples : 0, (GPUTextureFormat)m_hdr, mode, nullptr, type);
 			if (!ofs->GetValid()) {
 				delete ofs;
 				continue;

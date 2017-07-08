@@ -29,6 +29,7 @@
 #include "RAS_Texture.h" // for RAS_Texture::MaxUnits
 
 #include "CM_Message.h"
+#include "GPU_texture.h"
 
 KX_2DFilter::KX_2DFilter(RAS_2DFilterData& data)
 	:RAS_2DFilter(data)
@@ -154,7 +155,7 @@ KX_PYMETHODDEF_DOC(KX_2DFilter, addOffScreen, " addOffScreen(slots, depth, width
 	int depth = 0;
 	int width = -1;
 	int height = -1;
-	int hdr = RAS_Rasterizer::RAS_HDR_HALF_FLOAT;
+	int hdr = GPU_RGBA16F;
 	int mipmap = 0;
 	int flag = 0;
 
@@ -175,7 +176,7 @@ KX_PYMETHODDEF_DOC(KX_2DFilter, addOffScreen, " addOffScreen(slots, depth, width
 		return nullptr;
 	}
 
-	if (hdr < 0 || hdr > RAS_Rasterizer::RAS_HDR_MAX) {
+	if (hdr < 0 || hdr > 1) {
 		PyErr_SetString(PyExc_TypeError, "filter.addOffScreen(...): KX_2DFilter, invalid hdr value.");
 		return nullptr;
 	}
@@ -202,8 +203,7 @@ KX_PYMETHODDEF_DOC(KX_2DFilter, addOffScreen, " addOffScreen(slots, depth, width
 		flag |= RAS_2DFilterOffScreen::RAS_DEPTH;
 	}
 
-	KX_2DFilterOffScreen *offScreen = new KX_2DFilterOffScreen(slots, (RAS_2DFilterOffScreen::Flag)flag, width, height,
-															   (RAS_Rasterizer::HdrType)hdr);
+	KX_2DFilterOffScreen *offScreen = new KX_2DFilterOffScreen(slots, (RAS_2DFilterOffScreen::Flag)flag, width, height, hdr);
 
 	SetOffScreen(offScreen);
 
