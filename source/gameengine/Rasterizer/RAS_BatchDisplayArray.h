@@ -167,6 +167,8 @@ public:
 
 		// Update the cache to avoid accessing dangling vertex pointer from GetVertex().
 		UpdateCache();
+		// Update OpenGl storage.
+		ConstructStorage();
 	}
 };
 

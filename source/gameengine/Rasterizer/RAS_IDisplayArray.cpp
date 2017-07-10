@@ -24,7 +24,8 @@
  *  \ingroup bgerast
  */
 
-#include "RAS_DisplayArray.h"
+#include "RAS_IDisplayArray.h"
+#include "RAS_DisplayArrayStorage.h"
 #include "RAS_MeshObject.h"
 
 #include "GPU_glew.h"
@@ -150,3 +151,14 @@ RAS_IDisplayArray::Type RAS_IDisplayArray::GetType() const
 {
 	return NORMAL;
 }
+
+RAS_DisplayArrayStorage *RAS_IDisplayArray::GetStorage() const
+{
+	return m_storage;
+}
+
+void RAS_IDisplayArray::ConstructStorage()
+{
+	m_storage.reset(new RAS_DisplayArrayStorage(this));
+}
+

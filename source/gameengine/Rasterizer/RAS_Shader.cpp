@@ -165,7 +165,8 @@ RAS_Shader::RAS_Shader()
 	:m_shader(nullptr),
 	m_use(0),
 	m_error(0),
-	m_dirty(true)
+	m_dirty(true),
+	m_tangent(false)
 {
 	for (unsigned short i = 0; i < MAX_PROGRAM; ++i) {
 		m_progs[i] = "";
@@ -365,16 +366,6 @@ void RAS_Shader::SetProg(bool enable)
 	else {
 		GPU_shader_unbind();
 	}
-}
-
-const RAS_Rasterizer::TexCoGenList& RAS_Shader::GetTexCoords() const
-{
-	return m_texcos;
-}
-
-const RAS_Rasterizer::TexCoGenList& RAS_Shader::GetAttribs() const
-{
-	return m_attribs;
 }
 
 void RAS_Shader::SetEnabled(bool enabled)

@@ -45,8 +45,6 @@ public:
 
 	virtual void SetProg(bool enable);
 
-	void SetAttribs(RAS_Rasterizer *rasty);
-
 	/** Update the uniform shader for the current rendered mesh slot.
 	 * The python callbacks are executed in this function and at the end
 	 * RAS_Shader::Update(rasty, mat) is called.

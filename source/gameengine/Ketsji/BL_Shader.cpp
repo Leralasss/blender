@@ -114,12 +114,6 @@ void BL_Shader::SetProg(bool enable)
 	RAS_Shader::SetProg(enable);
 }
 
-void BL_Shader::SetAttribs(RAS_Rasterizer *rasty)
-{
-	rasty->SetTexCoords(m_texcos);
-	rasty->SetAttribs(m_attribs);
-}
-
 void BL_Shader::Update(RAS_Rasterizer *rasty, RAS_MeshSlot *ms)
 {
 #ifdef WITH_PYTHON

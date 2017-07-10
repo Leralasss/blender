@@ -63,6 +63,8 @@ set(SRC
 	RAS_2DFilterData.cpp
 	RAS_2DFilterManager.cpp
 	RAS_2DFilterOffScreen.cpp
+	RAS_AttributeArray.cpp
+	RAS_AttributeArrayStorage.cpp
 	RAS_BatchGroup.cpp
 	RAS_BoundingBox.cpp
 	RAS_BoundingBoxManager.cpp
@@ -95,6 +97,8 @@ set(SRC
 	RAS_2DFilter.h
 	RAS_2DFilterManager.h
 	RAS_2DFilterOffScreen.h
+	RAS_AttributeArray.h
+	RAS_AttributeArrayStorage.h
 	RAS_BatchDisplayArray.h
 	RAS_BatchGroup.h
 	RAS_BoundingBox.h
@@ -111,7 +115,6 @@ set(SRC
 	RAS_IBatchDisplayArray.h
 	RAS_IPolygonMaterial.h
 	RAS_Rasterizer.h
-	RAS_IStorageInfo.h
 	RAS_ILightObject.h
 	RAS_InstancingBuffer.h
 	RAS_ISync.h

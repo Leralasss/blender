@@ -32,7 +32,7 @@
 template <class Vertex>
 class RAS_BatchDisplayArray;
 
-/// An array with data used for OpenGL drawing
+/// An array with data used for OpenGL drawing.
 template <class Vertex>
 class RAS_DisplayArray : public virtual RAS_IDisplayArray
 {
@@ -64,29 +64,29 @@ public:
 		return sizeof(Vertex);
 	}
 
-	virtual void *GetVertexXYZOffset() const
+	virtual intptr_t GetVertexXYZOffset() const
 	{
-		return (void *)offsetof(Vertex, m_localxyz);
+		return offsetof(Vertex, m_localxyz);
 	}
 
-	virtual void *GetVertexNormalOffset() const
+	virtual intptr_t GetVertexNormalOffset() const
 	{
-		return (void *)offsetof(Vertex, m_normal);
+		return offsetof(Vertex, m_normal);
 	}
 
-	virtual void *GetVertexTangentOffset() const
+	virtual intptr_t GetVertexTangentOffset() const
 	{
-		return (void *)offsetof(Vertex, m_tangent);
+		return offsetof(Vertex, m_tangent);
 	}
 
-	virtual void *GetVertexUVOffset() const
+	virtual intptr_t GetVertexUVOffset() const
 	{
-		return (void *)offsetof(Vertex, m_uvs);
+		return offsetof(Vertex, m_uvs);
 	}
 
-	virtual void *GetVertexColorOffset() const
+	virtual intptr_t GetVertexColorOffset() const
 	{
-		return (void *)offsetof(Vertex, m_rgba);
+		return offsetof(Vertex, m_rgba);
 	}
 
 	virtual unsigned short GetVertexUvSize() const
