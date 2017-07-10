@@ -275,6 +275,14 @@ unsigned int RAS_MeshObject::AddVertex(
 	RAS_IDisplayArray *darray = slot->GetDisplayArray();
 	RAS_ITexVert *vertex = darray->CreateVertex(xyz, uvs, tangent, rgba, normal);
 
+	int k = 0;
+	for (RAS_MeshObject::Layer layer : GetLayersInfo().layers) {
+		if (strlen(layer.name.c_str())) {
+			darray->SetUVLayersName(layer.name, k);
+			k++;
+		}
+	}
+
 	{	/* Shared Vertex! */
 		/* find vertices shared between faces, with the restriction
 		 * that they exist in the same display array, and have the

@@ -110,6 +110,7 @@ void VBO::AllocData()
 
 static int vertattribloc;
 static int normalattribloc;
+static int uvattribloc;
 
 void VBO::Bind(RAS_Rasterizer::StorageAttribs *storageAttribs, RAS_Rasterizer::DrawType drawingmode)
 {
@@ -146,11 +147,14 @@ void VBO::Bind(RAS_Rasterizer::StorageAttribs *storageAttribs, RAS_Rasterizer::D
 	glEnableVertexAttribArray(normalattribloc);
 	glVertexAttribPointer(normalattribloc, 3, GL_FLOAT, GL_FALSE, m_stride, m_normal_offset);
 
-	const char *uvattrib = "u"; // UV coordinates
-	int uvattribloc = glGetAttribLocation(program, uvattrib);
-	if (uvattribloc != -1) {
-		glEnableVertexAttribArray(uvattribloc);
-		glVertexAttribPointer(uvattribloc, 2, GL_FLOAT, GL_FALSE, m_stride, m_uv_offset);
+	for (int i = 0; i < 8; i++) {
+		if (strlen(m_data->GetUVLayerName(i).c_str())) {
+			uvattribloc = glGetAttribLocation(program, "u");
+			if (uvattribloc != -1) {
+				glEnableVertexAttribArray(uvattribloc);
+				glVertexAttribPointer(uvattribloc, 2, GL_FLOAT, GL_FALSE, m_stride, (void *)((intptr_t)m_uv_offset + sizeof(GLfloat) * i * 2));
+			}
+		}
 	}
 
 	const char *tattrib = "t"; // Tangent coordinates
@@ -268,6 +272,8 @@ void VBO::Unbind(RAS_Rasterizer::StorageAttribs *storageAttribs, RAS_Rasterizer:
 
 	glDisableVertexAttribArray(vertattribloc);
 	glDisableVertexAttribArray(normalattribloc);
+	glDisableVertexAttribArray(uvattribloc);
+
 	/*if (!wireframe) {
 		glDisableClientState(GL_COLOR_ARRAY);
 	}

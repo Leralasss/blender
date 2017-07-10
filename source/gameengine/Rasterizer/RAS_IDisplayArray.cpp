@@ -150,3 +150,13 @@ RAS_IDisplayArray::Type RAS_IDisplayArray::GetType() const
 {
 	return NORMAL;
 }
+
+const std::string& RAS_IDisplayArray::GetUVLayerName(int slot)
+{
+	return m_uvLayersName[slot];
+}
+
+void RAS_IDisplayArray::SetUVLayersName(const std::string& name, int slot)
+{
+	m_uvLayersName[slot] = name;
+}

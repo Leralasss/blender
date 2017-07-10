@@ -57,6 +57,7 @@ protected:
 	std::vector<RAS_ITexVert *> m_vertexPtrs;
 	/// The indices used for rendering.
 	std::vector<unsigned int> m_indices;
+	std::string m_uvLayersName[8];
 
 public:
 	RAS_IDisplayArray(PrimitiveType type, const RAS_TexVertFormat& format);
@@ -180,6 +181,10 @@ public:
 
 	/// Return the vertex format used.
 	const RAS_TexVertFormat& GetFormat() const;
+
+	/// Get/Set UV Layer name
+	const std::string& GetUVLayerName(int slot);
+	void SetUVLayersName(const std::string& name, int slot);
 
 	/// Return the type of the display array.
 	virtual Type GetType() const;
