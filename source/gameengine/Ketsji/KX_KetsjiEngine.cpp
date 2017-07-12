@@ -75,6 +75,10 @@
 
 #include "KX_NavMeshObject.h"
 
+extern "C" {
+#  include "DRW_render.h"
+}
+
 #define DEFAULT_LOGIC_TIC_RATE 60.0
 
 #ifdef FREE_WINDOWS /* XXX mingw64 (gcc 4.7.0) defines a macro for DrawText that translates to DrawTextA. Not good */
@@ -834,51 +838,56 @@ void KX_KetsjiEngine::UpdateAnimations(KX_Scene *scene)
 
 void KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
 {
-	//CListValue<KX_LightObject> *lightlist = scene->GetLightList();
+	CListValue<KX_LightObject> *lightlist = scene->GetLightList();
 
-	//m_rasterizer->SetAuxilaryClientInfo(scene);
+	m_rasterizer->SetAuxilaryClientInfo(scene);
 
-	//for (KX_LightObject *light : lightlist) {
-	//	RAS_ILightObject *raslight = light->GetLightData();
+	int lightSlot = 0;
+	for (KX_LightObject *light : lightlist) {
+		RAS_ILightObject *raslight = light->GetLightData();
 
-	//	raslight->Update();
+		raslight->UpdateShadows(scene, lightSlot);
 
-	//	if (light->GetVisible() && m_rasterizer->GetDrawingMode() == RAS_Rasterizer::RAS_TEXTURED &&
-	//		raslight->HasShadowBuffer() && raslight->NeedShadowUpdate())
-	//	{
-	//		/* make temporary camera */
-	//		RAS_CameraData camdata = RAS_CameraData();
-	//		KX_Camera *cam = new KX_Camera(scene, scene->m_callbacks, camdata, true, true);
-	//		cam->SetName("__shadow__cam__");
+		if (RAS_Rasterizer::RAS_TEXTURED)
+		{
+			/* make temporary camera */
+			RAS_CameraData camdata = RAS_CameraData();
+			KX_Camera *cam = new KX_Camera(scene, scene->m_callbacks, camdata, true, true);
+			cam->SetName("__shadow__cam__");
 
-	//		MT_Transform camtrans;
+			MT_Transform camtrans = light->NodeGetWorldTransform();
 
-	//		/* switch drawmode for speed */
-	//		RAS_Rasterizer::DrawType drawmode = m_rasterizer->GetDrawingMode();
-	//		m_rasterizer->SetDrawingMode(RAS_Rasterizer::RAS_SHADOW);
+			/* switch drawmode for speed */
+			RAS_Rasterizer::DrawType drawmode = m_rasterizer->GetDrawingMode();
+			m_rasterizer->SetDrawingMode(RAS_Rasterizer::RAS_SHADOW);
 
-	//		/* binds framebuffer object, sets up camera .. */
-	//		raslight->BindShadowBuffer(m_canvas, cam, camtrans);
+			EEVEE_SceneLayerData *sldata = &scene->GetSceneLayerData();
+			DRW_uniformbuffer_update(sldata->shadow_ubo, &scene->GetShadowCube()[lightSlot]);
+			DRW_uniformbuffer_update(sldata->shadow_render_ubo, &raslight->m_shadowRender);
 
-	//		KX_CullingNodeList nodes;
-	//		/* update scene */
-	//		scene->CalculateVisibleMeshes(nodes, cam, raslight->GetShadowLayer());
+			KX_CullingNodeList nodes;
+			/* update scene */
+			scene->CalculateVisibleMeshes(nodes, cam, raslight->GetShadowLayer());
 
-	//		m_logger.StartLog(tc_animations, m_kxsystem->GetTimeInSeconds());
-	//		UpdateAnimations(scene);
-	//		m_logger.StartLog(tc_rasterizer, m_kxsystem->GetTimeInSeconds());
+			m_logger.StartLog(tc_animations, m_kxsystem->GetTimeInSeconds());
+			UpdateAnimations(scene);
+			m_logger.StartLog(tc_rasterizer, m_kxsystem->GetTimeInSeconds());
 
-	//		/* render */
-	//		m_rasterizer->Clear(RAS_Rasterizer::RAS_DEPTH_BUFFER_BIT | RAS_Rasterizer::RAS_COLOR_BUFFER_BIT);
-	//		// Send a nullptr off screen because the viewport is binding it's using its own private one.
-	//		scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
+			static float clear_color[4] = { FLT_MAX, FLT_MAX, FLT_MAX, 0.0f };
+			DRW_framebuffer_bind(sldata->shadow_cube_target_fb);
+			DRW_framebuffer_clear(true, true, false, clear_color, 1.0);
 
-	//		/* unbind framebuffer object, restore drawmode, free camera */
-	//		raslight->UnbindShadowBuffer();
-	//		m_rasterizer->SetDrawingMode(drawmode);
-	//		cam->Release();
-	//	}
-	//}
+			// Send a nullptr off screen because the viewport is binding it's using its own private one.
+			scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
+
+			DRW_framebuffer_bind(sldata->shadow_cube_fb);
+			scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
+
+			m_rasterizer->SetDrawingMode(drawmode);
+			cam->Release();
+		}
+		lightSlot++;
+	}
 }
 
 MT_Matrix4x4 KX_KetsjiEngine::GetCameraProjectionMatrix(KX_Scene *scene, KX_Camera *cam, RAS_Rasterizer::StereoEye eye,
