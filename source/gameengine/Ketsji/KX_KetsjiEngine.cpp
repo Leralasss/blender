@@ -877,8 +877,12 @@ void KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
 			DRW_framebuffer_bind(sldata->shadow_cube_target_fb);
 			DRW_framebuffer_clear(true, true, false, clear_color, 1.0);
 
+			m_rasterizer->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_EEVEE);
+
 			// Send a nullptr off screen because the viewport is binding it's using its own private one.
 			scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
+
+			m_rasterizer->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_STORE_EEVEE);
 
 			DRW_framebuffer_bind(sldata->shadow_cube_fb);
 			scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);

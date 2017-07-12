@@ -150,7 +150,7 @@ void RAS_BucketManager::Renderbuckets(const MT_Transform& cameratrans, RAS_Raste
 	switch (drawingMode) {
 		case RAS_Rasterizer::RAS_SHADOW:
 		{
-			const bool isVarianceShadow = rasty->GetShadowMode() == RAS_Rasterizer::RAS_SHADOW_VARIANCE;
+			//const bool isVarianceShadow = rasty->GetShadowMode() == RAS_Rasterizer::RAS_SHADOW_VARIANCE;
 
 			rasty->SetDepthMask(RAS_Rasterizer::RAS_DEPTHMASK_ENABLED);
 
@@ -159,55 +159,55 @@ void RAS_BucketManager::Renderbuckets(const MT_Transform& cameratrans, RAS_Raste
 			 */
 
 			m_nodeData.m_shaderOverride = true;
-			if (m_buckets[SOLID_SHADOW_BUCKET].size() > 0) {
-				rasty->SetOverrideShader(isVarianceShadow ?
-				                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE :
-				                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_BLACK);
-			}
+			//if (m_buckets[SOLID_SHADOW_BUCKET].size() > 0) {
+			//}
 			RenderBasicBuckets(rasty, SOLID_SHADOW_BUCKET);
 
-			/* Rendering solid instancing materials with a different override
-			 * shader for variance and simple shadow.
-			 */
+			rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_NONE);
+			m_nodeData.m_shaderOverride = false;
 
-			if (m_buckets[SOLID_SHADOW_INSTANCING_BUCKET].size() > 0) {
-				rasty->SetOverrideShader(isVarianceShadow ?
-				                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE_INSTANCING :
-				                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_BLACK_INSTANCING);
-			}
-			RenderBasicBuckets(rasty, SOLID_SHADOW_INSTANCING_BUCKET);
+			///* Rendering solid instancing materials with a different override
+			// * shader for variance and simple shadow.
+			// */
 
-			if (isVarianceShadow) {
-				/* Rendering alpha shadow instancing materials with an override
-				 * shader for variance shadow.
-				 */
+			//if (m_buckets[SOLID_SHADOW_INSTANCING_BUCKET].size() > 0) {
+			//	rasty->SetOverrideShader(isVarianceShadow ?
+			//	                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE_INSTANCING :
+			//	                         RAS_Rasterizer::RAS_OVERRIDE_SHADER_BLACK_INSTANCING);
+			//}
+			//RenderBasicBuckets(rasty, SOLID_SHADOW_INSTANCING_BUCKET);
 
-				if (m_buckets[ALPHA_SHADOW_INSTANCING_BUCKET].size() > 0) {
-					rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE_INSTANCING);
-				}
-				RenderBasicBuckets(rasty, ALPHA_SHADOW_INSTANCING_BUCKET);
+			//if (isVarianceShadow) {
+			//	/* Rendering alpha shadow instancing materials with an override
+			//	 * shader for variance shadow.
+			//	 */
 
-				/* Rendering alpha shadow regular materials with an override
-				 * shader for variance shadow and ordering.
-				 */
+			//	if (m_buckets[ALPHA_SHADOW_INSTANCING_BUCKET].size() > 0) {
+			//		rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE_INSTANCING);
+			//	}
+			//	RenderBasicBuckets(rasty, ALPHA_SHADOW_INSTANCING_BUCKET);
 
-				if (m_buckets[ALPHA_SHADOW_BUCKET].size() > 0) {
-					rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE);
-				}
-				RenderBasicBuckets(rasty, ALPHA_SHADOW_BUCKET);
+			//	/* Rendering alpha shadow regular materials with an override
+			//	 * shader for variance shadow and ordering.
+			//	 */
 
-				rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_NONE);
-			}
-			else {
-				// Rendering alpha shadow materials (including instancing) with their shaders.
+			//	if (m_buckets[ALPHA_SHADOW_BUCKET].size() > 0) {
+			//		rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_VARIANCE);
+			//	}
+			//	RenderBasicBuckets(rasty, ALPHA_SHADOW_BUCKET);
 
-				rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_NONE);
-				m_nodeData.m_shaderOverride = false;
+			//	rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_NONE);
+			//}
+			//else {
+			//	// Rendering alpha shadow materials (including instancing) with their shaders.
 
-				RenderBasicBuckets(rasty, ALPHA_SHADOW_INSTANCING_BUCKET);
-				// Render alpha shadow regular materials with ordering.
-				RenderBasicBuckets(rasty, ALPHA_SHADOW_BUCKET);
-			}
+			//	rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_NONE);
+			//	m_nodeData.m_shaderOverride = false;
+
+			//	RenderBasicBuckets(rasty, ALPHA_SHADOW_INSTANCING_BUCKET);
+			//	// Render alpha shadow regular materials with ordering.
+			//	RenderBasicBuckets(rasty, ALPHA_SHADOW_BUCKET);
+			//}
 
 			break;
 		}

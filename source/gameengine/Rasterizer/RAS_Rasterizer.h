@@ -163,6 +163,8 @@ public:
 		RAS_OVERRIDE_SHADER_BLACK,
 		RAS_OVERRIDE_SHADER_BLACK_INSTANCING,
 		RAS_OVERRIDE_SHADER_SHADOW_VARIANCE,
+		RAS_OVERRIDE_SHADER_SHADOW_EEVEE,
+		RAS_OVERRIDE_SHADER_SHADOW_STORE_EEVEE,
 		RAS_OVERRIDE_SHADER_SHADOW_VARIANCE_INSTANCING,
 	};
 
@@ -362,7 +364,10 @@ private:
 	void ExitScreenShaders();
 
 	/// Return GPUShader coresponding to the override shader enumeration.
-	GPUShader *GetOverrideGPUShader(OverrideShaderType type);	
+	GPUShader *GetOverrideGPUShader(OverrideShaderType type);
+
+	GPUShader *m_shadowShader;
+	GPUShader *m_shadowShaderStore;
 
 	/*void EnableLights();
 	void DisableLights();*/

@@ -200,6 +200,15 @@ RAS_Rasterizer::OffScreenType RAS_Rasterizer::NextRenderOffScreen(RAS_Rasterizer
 	}
 }
 
+extern "C" {
+	extern char datatoc_shadow_vert_glsl[];
+	extern char datatoc_shadow_geom_glsl[];
+	extern char datatoc_shadow_frag_glsl[];
+	extern char datatoc_shadow_store_vert_glsl[];
+	extern char datatoc_shadow_store_geom_glsl[];
+	extern char datatoc_shadow_store_frag_glsl[];
+}
+
 RAS_Rasterizer::RAS_Rasterizer()
 	:m_fogenabled(false),
 	m_time(0.0f),
@@ -231,6 +240,9 @@ RAS_Rasterizer::RAS_Rasterizer()
 	m_storage.reset(new RAS_StorageVBO(&m_storageAttribs));
 
 	m_numgllights = m_impl->GetNumLights();
+
+	m_shadowShader = GPU_shader_create(datatoc_shadow_vert_glsl, datatoc_shadow_frag_glsl, datatoc_shadow_geom_glsl, NULL, NULL);
+	m_shadowShaderStore = GPU_shader_create(datatoc_shadow_store_vert_glsl, datatoc_shadow_store_frag_glsl, datatoc_shadow_store_geom_glsl, NULL, NULL);
 }
 
 RAS_Rasterizer::~RAS_Rasterizer()
@@ -1242,6 +1254,16 @@ GPUShader *RAS_Rasterizer::GetOverrideGPUShader(OverrideShaderType type)
 		case RAS_OVERRIDE_SHADER_SHADOW_VARIANCE:
 		{
 			shader = GPU_shader_get_builtin_shader(GPU_SHADER_VSM_STORE);
+			break;
+		}
+		case RAS_OVERRIDE_SHADER_SHADOW_EEVEE:
+		{
+			shader = m_shadowShader;
+			break;
+		}
+		case RAS_OVERRIDE_SHADER_SHADOW_STORE_EEVEE:
+		{
+			shader = m_shadowShaderStore;
 			break;
 		}
 		case RAS_OVERRIDE_SHADER_SHADOW_VARIANCE_INSTANCING:
