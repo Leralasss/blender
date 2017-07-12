@@ -30,8 +30,7 @@
 class RAS_Rasterizer;
 struct GPULamp;
 struct Image;
-
-struct EEVEE_Light;
+class KX_Scene;
 
 class RAS_OpenGLLight : public RAS_ILightObject
 {
@@ -42,9 +41,7 @@ class RAS_OpenGLLight : public RAS_ILightObject
 
 public:
 	RAS_OpenGLLight(RAS_Rasterizer *ras);
-	~RAS_OpenGLLight();
-
-	bool Update(EEVEE_Light& lightData);
+	~RAS_OpenGLLight();	
 
 	RAS_OpenGLLight *Clone()
 	{
@@ -61,6 +58,7 @@ public:
 	void BindShadowBuffer(RAS_ICanvas *canvas, KX_Camera *cam, MT_Transform& camtrans);
 	void UnbindShadowBuffer();
 	Image *GetTextureImage(short texslot);
-	void Update();
+	bool Update(EEVEE_Light& lightData, int slot);
+	void UpdateShadows(KX_Scene *scene, int slot);
 	void SetShadowUpdateState(short state);
 };

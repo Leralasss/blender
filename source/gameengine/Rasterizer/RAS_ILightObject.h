@@ -32,6 +32,10 @@
 #ifndef __RAS_LIGHTOBJECT_H__
 #define __RAS_LIGHTOBJECT_H__
 
+extern "C" {
+#  include "eevee_private.h"
+}
+
 class RAS_ICanvas;
 
 class KX_Camera;
@@ -77,6 +81,7 @@ public:
 	float	m_spotblend;
 
 	LightType	m_type;
+	EEVEE_ShadowRender m_shadowRender;
 	
 	bool	m_nodiffuse;
 	bool	m_nospecular;
@@ -97,7 +102,8 @@ public:
 	virtual void BindShadowBuffer(RAS_ICanvas *canvas, KX_Camera *cam, MT_Transform& camtrans) = 0;
 	virtual void UnbindShadowBuffer() = 0;
 	virtual Image *GetTextureImage(short texslot) = 0;
-	virtual void Update() = 0;
+	virtual bool Update(EEVEE_Light& lightData, int slot) = 0;
+	virtual void UpdateShadows(KX_Scene *scene, int slot) = 0;
 };
 
 #endif  /* __RAS_LIGHTOBJECT_H__ */

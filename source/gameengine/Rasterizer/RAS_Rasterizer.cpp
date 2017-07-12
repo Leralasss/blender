@@ -1418,7 +1418,7 @@ void RAS_Rasterizer::UpdateLights(EEVEE_SceneLayerData& sldata)
 	EEVEE_LampsInfo *linfo = sldata.lamps;
 	unsigned int i = 0;
 	for (unsigned short size = m_lights.size(); i < size;) {
-		if (m_lights[i]->Update(linfo->light_data[i])) {
+		if (m_lights[i]->Update(linfo->light_data[i], i)) {
 			++i;
 		}
 	}

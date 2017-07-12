@@ -145,6 +145,7 @@ private:
 
 protected:
 	EEVEE_SceneLayerData m_layerData;
+	EEVEE_ShadowCube m_shadowCube[42];
 
 	KX_TextureRendererManager *m_rendererManager;
 	RAS_BucketManager*	m_bucketmanager;
@@ -334,6 +335,7 @@ public:
 
 	void SetSceneLayerData(const EEVEE_SceneLayerData &data);
 	EEVEE_SceneLayerData& GetSceneLayerData();
+	EEVEE_ShadowCube *GetShadowCube();
 	RAS_BucketManager* GetBucketManager() const;
 	KX_TextureRendererManager *GetTextureRendererManager() const;
 	RAS_BoundingBoxManager *GetBoundingBoxManager() const;

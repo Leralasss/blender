@@ -49,10 +49,6 @@
 #include "KX_Globals.h"
 #include "KX_Scene.h"
 
-extern "C" {
-#include "../draw/engines/eevee/eevee_private.h"
-}
-
 RAS_OpenGLLight::RAS_OpenGLLight(RAS_Rasterizer *ras)
 	:m_rasterizer(ras)
 {
@@ -72,7 +68,7 @@ RAS_OpenGLLight::~RAS_OpenGLLight()
 	}
 }
 
-bool RAS_OpenGLLight::Update(EEVEE_Light& lightData)
+bool RAS_OpenGLLight::Update(EEVEE_Light& lightData, int slot)
 {
 	//KX_Scene *lightscene = (KX_Scene *)m_scene;
 	//KX_LightObject *kxlight = (KX_LightObject *)m_light;
@@ -240,9 +236,38 @@ bool RAS_OpenGLLight::Update(EEVEE_Light& lightData)
 	lightData.lamptype = (float)la->type;
 
 	/* No shadow by default */
-	lightData.shadowid = -1.0f;
+	lightData.shadowid = (float)slot;
 
 	return true;
+}
+
+void RAS_OpenGLLight::UpdateShadows(KX_Scene *scene, int slot)
+{
+	KX_LightObject *kxlight = (KX_LightObject *)m_light;
+	Lamp *la = (Lamp *)kxlight->GetBlenderObject()->data;
+	EEVEE_ShadowCube *evsh = &scene->GetShadowCube()[slot];
+	float projmat[4][4];
+	float obmat[4][4];
+	const MT_Transform trans = kxlight->NodeGetWorldTransform();
+	trans.getValue(&obmat[0][0]);
+
+	evsh->bias = 0.05f * la->bias;
+	evsh->nearf = la->clipsta;
+	evsh->farf = la->clipend;
+	evsh->exp = la->bleedexp;
+	perspective_m4(projmat, -la->clipsta, la->clipsta, -la->clipsta, la->clipsta, la->clipsta, la->clipend);
+
+	for (int i = 0; i < 6; ++i) {
+		float tmp[4][4];
+		unit_m4(tmp);
+		negate_v3_v3(tmp[3], obmat[3]);
+		mul_m4_m4m4(tmp, cubefacemat[i], tmp);
+		mul_m4_m4m4(m_shadowRender.shadowmat[i], projmat, tmp);
+	}
+	m_shadowRender.layer = slot;
+	m_shadowRender.exponent = la->bleedexp;
+	copy_v3_v3(m_shadowRender.position, obmat[3]);
+
 }
 
 GPULamp *RAS_OpenGLLight::GetGPULamp()
@@ -383,22 +408,4 @@ Image *RAS_OpenGLLight::GetTextureImage(short texslot)
 	return nullptr;
 }
 
-void RAS_OpenGLLight::Update()
-{
-	GPULamp *lamp;
-	KX_LightObject *kxlight = (KX_LightObject *)m_light;
-
-	if ((lamp = GetGPULamp()) != nullptr && kxlight->GetSGNode()) {
-		float obmat[4][4];
-		const MT_Transform trans = kxlight->NodeGetWorldTransform();
-		trans.getValue(&obmat[0][0]);
-
-		int hide = kxlight->GetVisible() ? 0 : 1;
-		GPU_lamp_update(lamp, m_layer, hide, obmat);
-		GPU_lamp_update_colors(lamp, m_color[0], m_color[1],
-		                       m_color[2], m_energy);
-		GPU_lamp_update_distance(lamp, m_distance, m_att1, m_att2, m_coeff_const, m_coeff_lin, m_coeff_quad);
-		GPU_lamp_update_spot(lamp, m_spotsize, m_spotblend);
-	}
-}
 

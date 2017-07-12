@@ -325,6 +325,11 @@ EEVEE_SceneLayerData& KX_Scene::GetSceneLayerData()
 	return m_layerData;
 }
 
+EEVEE_ShadowCube *KX_Scene::GetShadowCube()
+{
+	return m_shadowCube;
+}
+
 RAS_BucketManager* KX_Scene::GetBucketManager() const
 {
 	return m_bucketmanager;
