@@ -30,6 +30,10 @@
 #include "RAS_Rasterizer.h"
 #include "RAS_MeshUser.h"
 
+#include "KX_Globals.h"
+#include "KX_Scene.h"
+#include "GPU_shader.h"
+
 extern "C" {
 	// To avoid include BKE_DerivedMesh.h.
 	typedef int (*DMSetMaterial)(int mat_nr, void *attribs);
@@ -101,6 +105,20 @@ void RAS_InstancingBuffer::Update(RAS_Rasterizer *rasty, int drawingmode, RAS_Me
 		data.color[1] = color[1] * 255.0f;
 		data.color[2] = color[2] * 255.0f;
 		data.color[3] = color[3] * 255.0f;
+
+		if (rasty->GetDrawingMode() == RAS_Rasterizer::RAS_SHADOW) {
+			EEVEE_SceneLayerData *sldata = &KX_GetActiveScene()->GetSceneLayerData();
+
+			GPUShader *shader = rasty->GetOverrideGPUShader(rasty->GetOverrideShader());
+			int matloc = GPU_shader_get_uniform(shader, "ShadowModelMatrix");
+			GPU_shader_uniform_vector(shader, matloc, 16, 1, (float *)ms->m_meshUser->GetMatrix());
+			int uniloc = GPU_shader_get_uniform_block(shader, "shadow_render_block");
+
+			int shcubeloc = GPU_shader_get_uniform(shader, "shadowCube");
+			GPU_shader_uniform_texture(shader, shcubeloc, sldata->shadow_color_cube_target);
+
+			GPU_shader_uniform_buffer(shader, uniloc, sldata->shadow_render_ubo);
+		}
 	}
 
 	GPU_buffer_unlock(m_vbo, GPU_BINDING_ARRAY);

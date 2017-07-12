@@ -363,9 +363,6 @@ private:
 	void InitScreenShaders();
 	void ExitScreenShaders();
 
-	/// Return GPUShader coresponding to the override shader enumeration.
-	GPUShader *GetOverrideGPUShader(OverrideShaderType type);
-
 	GPUShader *m_shadowShader;
 	GPUShader *m_shadowShaderStore;
 
@@ -375,6 +372,9 @@ private:
 public:
 	RAS_Rasterizer();
 	virtual ~RAS_Rasterizer();
+
+	/// Return GPUShader coresponding to the override shader enumeration.
+	GPUShader *GetOverrideGPUShader(OverrideShaderType type);
 
 	/**
 	 * Enable capability

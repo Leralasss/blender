@@ -161,7 +161,7 @@ void RAS_BucketManager::Renderbuckets(const MT_Transform& cameratrans, RAS_Raste
 			m_nodeData.m_shaderOverride = true;
 			//if (m_buckets[SOLID_SHADOW_BUCKET].size() > 0) {
 			//}
-			RenderBasicBuckets(rasty, SOLID_SHADOW_BUCKET);
+			RenderBasicBuckets(rasty, SOLID_SHADOW_INSTANCING_BUCKET);
 
 			rasty->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_NONE);
 			m_nodeData.m_shaderOverride = false;
@@ -344,7 +344,7 @@ RAS_MaterialBucket *RAS_BucketManager::FindBucket(RAS_IPolyMaterial *material, b
 			m_buckets[useinstancing ? ALPHA_SHADOW_INSTANCING_BUCKET : ALPHA_SHADOW_BUCKET].push_back(bucket);
 		}
 		else {
-			m_buckets[useinstancing ? SOLID_SHADOW_INSTANCING_BUCKET : SOLID_SHADOW_BUCKET].push_back(bucket);
+			m_buckets[SOLID_SHADOW_INSTANCING_BUCKET].push_back(bucket);
 		}
 	}
 	if (material->IsText()) {

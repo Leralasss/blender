@@ -52,6 +52,7 @@
 #include "RAS_ICanvas.h"
 #include "RAS_OffScreen.h"
 #include "RAS_ILightObject.h"
+#include "GPU_shader.h"
 #include "MT_Vector3.h"
 #include "MT_Transform.h"
 #include "SCA_IInputDevice.h"
@@ -612,12 +613,12 @@ void KX_KetsjiEngine::Render()
 
 	BeginFrame();
 
-	/*for (KX_Scene *scene : m_scenes) {
+	for (KX_Scene *scene : m_scenes) {
 		// shadow buffers
 		RenderShadowBuffers(scene);
 		// Render only independent texture renderers here.
-		scene->RenderTextureRenderers(KX_TextureRendererManager::VIEWPORT_INDEPENDENT, m_rasterizer, nullptr, nullptr, RAS_Rect(), RAS_Rect());
-	}*/
+		//scene->RenderTextureRenderers(KX_TextureRendererManager::VIEWPORT_INDEPENDENT, m_rasterizer, nullptr, nullptr, RAS_Rect(), RAS_Rect());
+	}
 
 	std::vector<FrameRenderData> frameDataList;
 	const bool renderpereye = GetFrameRenderData(frameDataList);
@@ -848,48 +849,53 @@ void KX_KetsjiEngine::RenderShadowBuffers(KX_Scene *scene)
 
 		raslight->UpdateShadows(scene, lightSlot);
 
-		if (RAS_Rasterizer::RAS_TEXTURED)
-		{
-			/* make temporary camera */
-			RAS_CameraData camdata = RAS_CameraData();
-			KX_Camera *cam = new KX_Camera(scene, scene->m_callbacks, camdata, true, true);
-			cam->SetName("__shadow__cam__");
+		/* make temporary camera */
+		RAS_CameraData camdata = RAS_CameraData();
+		KX_Camera *cam = new KX_Camera(scene, scene->m_callbacks, camdata, true, true);
+		cam->SetName("__shadow__cam__");
 
-			MT_Transform camtrans = light->NodeGetWorldTransform();
+		MT_Transform camtrans = light->NodeGetWorldTransform();
+		MT_Matrix4x4 lightmat(camtrans);
+		float m[16];
+		lightmat.getValue(m);
+		cam->NodeSetLocalPosition(light->NodeGetWorldPosition());
+		cam->NodeSetLocalOrientation(light->NodeGetWorldOrientation());
+		cam->NodeUpdateGS(0.0f);
 
-			/* switch drawmode for speed */
-			RAS_Rasterizer::DrawType drawmode = m_rasterizer->GetDrawingMode();
-			m_rasterizer->SetDrawingMode(RAS_Rasterizer::RAS_SHADOW);
+		/* switch drawmode for speed */
+		RAS_Rasterizer::DrawType drawmode = m_rasterizer->GetDrawingMode();
+		m_rasterizer->SetDrawingMode(RAS_Rasterizer::RAS_SHADOW);
 
-			EEVEE_SceneLayerData *sldata = &scene->GetSceneLayerData();
-			DRW_uniformbuffer_update(sldata->shadow_ubo, &scene->GetShadowCube()[lightSlot]);
-			DRW_uniformbuffer_update(sldata->shadow_render_ubo, &raslight->m_shadowRender);
+		EEVEE_SceneLayerData *sldata = &scene->GetSceneLayerData();
+		DRW_uniformbuffer_update(sldata->shadow_ubo, scene->GetShadowCube());
+		DRW_uniformbuffer_update(sldata->shadow_render_ubo, &raslight->m_shadowRender);
 
-			KX_CullingNodeList nodes;
-			/* update scene */
-			scene->CalculateVisibleMeshes(nodes, cam, raslight->GetShadowLayer());
+		KX_CullingNodeList nodes;
+		/* update scene */
+		scene->CalculateVisibleMeshes(nodes, cam, raslight->GetShadowLayer());
 
-			m_logger.StartLog(tc_animations, m_kxsystem->GetTimeInSeconds());
-			UpdateAnimations(scene);
-			m_logger.StartLog(tc_rasterizer, m_kxsystem->GetTimeInSeconds());
+		m_logger.StartLog(tc_animations, m_kxsystem->GetTimeInSeconds());
+		UpdateAnimations(scene);
+		m_logger.StartLog(tc_rasterizer, m_kxsystem->GetTimeInSeconds());
 
-			static float clear_color[4] = { FLT_MAX, FLT_MAX, FLT_MAX, 0.0f };
-			DRW_framebuffer_bind(sldata->shadow_cube_target_fb);
-			DRW_framebuffer_clear(true, true, false, clear_color, 1.0);
+		static float clear_color[4] = { FLT_MAX, FLT_MAX, FLT_MAX, 0.0f };
+		DRW_framebuffer_bind(sldata->shadow_cube_target_fb);
+		DRW_framebuffer_clear(true, true, false, clear_color, 1.0);
 
-			m_rasterizer->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_EEVEE);
+		m_rasterizer->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_EEVEE);
 
-			// Send a nullptr off screen because the viewport is binding it's using its own private one.
-			scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
+		// Send a nullptr off screen because the viewport is binding it's using its own private one.
+		scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
 
-			m_rasterizer->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_STORE_EEVEE);
+		m_rasterizer->SetOverrideShader(RAS_Rasterizer::RAS_OVERRIDE_SHADER_SHADOW_STORE_EEVEE);
 
-			DRW_framebuffer_bind(sldata->shadow_cube_fb);
-			scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
+		DRW_framebuffer_bind(sldata->shadow_cube_fb);
+		m_rasterizer->Clear(RAS_Rasterizer::RAS_DEPTH_BUFFER_BIT | RAS_Rasterizer::RAS_COLOR_BUFFER_BIT);
+		scene->RenderBuckets(nodes, camtrans, m_rasterizer, nullptr);
 
-			m_rasterizer->SetDrawingMode(drawmode);
-			cam->Release();
-		}
+		m_rasterizer->SetDrawingMode(drawmode);
+		cam->Release();
+
 		lightSlot++;
 	}
 }
